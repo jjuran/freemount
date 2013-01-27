@@ -13,14 +13,14 @@
 namespace freemount
 {
 	
-	void send_empty_fragment( int fd, uint8_t type );
+	void send_empty_fragment( int fd, uint8_t type, uint8_t r_id = 0 );
 	
-	void send_empty_request( int fd, uint8_t req_type );
+	void send_empty_request( int fd, uint8_t req_type, uint8_t r_id = 0 );
 	
-	void send_u32_fragment( int fd, uint8_t type, uint32_t data );
-	void send_u64_fragment( int fd, uint8_t type, uint64_t data );
+	void send_u32_fragment( int fd, uint8_t type, uint32_t data, uint8_t r_id = 0 );
+	void send_u64_fragment( int fd, uint8_t type, uint64_t data, uint8_t r_id = 0 );
 	
-	void send_string_fragment( int fd, uint8_t type, const char* data, uint16_t length );
+	void send_string_fragment( int fd, uint8_t type, const char* data, uint16_t length, uint8_t r_id = 0 );
 	
 }
 
