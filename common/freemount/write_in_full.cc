@@ -20,7 +20,7 @@ namespace freemount
 		
 		while ( n_bytes < n )
 		{
-			ssize_t n_written = write( fd, buffer, n );
+			ssize_t n_written = write( fd, buffer, n - n_bytes );
 			
 			if ( n_written >= 0 )
 			{

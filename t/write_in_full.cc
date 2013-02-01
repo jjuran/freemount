@@ -111,11 +111,11 @@ static void multi_write()
 	
 	check_read( fds[0] );
 	
-	ok_if( last_i > 0, "# TODO" );
+	ok_if( last_i > 0 );
 	
-	ok_if( data_read_matches_written, "# TODO" );
+	ok_if( data_read_matches_written );
 	
-	ok_if( !exception_caught, "# TODO" );
+	ok_if( !exception_caught );
 	
 	::operator delete( read_buffer );
 	
