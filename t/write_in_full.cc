@@ -17,7 +17,7 @@
 #include "tap/test.hh"
 
 
-static const unsigned n_tests = 3 * 8;
+static const unsigned n_tests = 3 + 3 * 8;
 
 
 using freemount::write_in_full;
@@ -29,8 +29,98 @@ using tap::ok_if;
 static sig_atomic_t caught_sigalrm;
 static sig_atomic_t caught_sigpipe;
 
+static int fd_to_read  = -1;
 static int fd_to_close = -1;
 
+const size_t n_to_read = 65536;
+
+const size_t read_buffer_size = sizeof (unsigned int) * n_to_read;
+
+static unsigned int* read_buffer;
+
+static unsigned int last_i = 0;
+
+static bool data_read_matches_written = true;
+
+static void check_read( int fd )
+{
+	ssize_t n_read = CHECK( read( fd, read_buffer + last_i, read_buffer_size ) );
+	
+	unsigned int i = last_i;
+	
+	last_i = n_read / sizeof (unsigned int);
+	
+	for ( ;  i < last_i;  ++i )
+	{
+		if ( read_buffer[ i ] != i )
+		{
+			data_read_matches_written = false;
+			
+			break;
+		}
+	}
+}
+
+static void sigalrm_read_handler( int )
+{
+	if ( fd_to_read >= 0 )
+	{
+		check_read( fd_to_read );
+		
+		alarm( 1 );
+	}
+}
+
+static void multi_write()
+{
+	read_buffer = (unsigned int*) ::operator new( read_buffer_size );
+	
+	for ( unsigned int i = 0;  i < n_to_read;  ++i )
+	{
+		read_buffer[ i ] = i;
+	}
+	
+	int fds[ 2 ];
+	
+	CHECK( pipe( fds ) );
+	
+	fd_to_read = fds[0];
+	
+	CHECK( (long) signal( SIGALRM, &sigalrm_read_handler ) );
+	
+	CHECK( alarm( 1 ) );
+	
+	CHECK( write( fds[1], read_buffer, sizeof (unsigned int) ) );
+	
+	bool exception_caught = false;
+	
+	try
+	{
+		write_in_full( fds[1], read_buffer + 1, read_buffer_size - sizeof (unsigned int) );
+	}
+	catch ( const failed_write& error )
+	{
+		exception_caught = true;
+	}
+	
+	alarm( 0 );
+	
+	close( fds[1] );
+	
+	fd_to_read = -1;
+	
+	check_read( fds[0] );
+	
+	ok_if( last_i > 0 );
+	
+	ok_if( data_read_matches_written );
+	
+	ok_if( !exception_caught );
+	
+	::operator delete( read_buffer );
+	
+	read_buffer = NULL;
+}
 
 static void sigalrm_handler( int )
 {
@@ -110,6 +200,8 @@ static void pipe_buffer_overrun( size_t buffer_size, bool nonblocking, bool clos
 int main( int argc, char** argv )
 {
 	tap::start( "write_in_full", n_tests );
+	
+	multi_write();
 	
 	for ( int i = 0;  i < 8;  ++i )
 	{
