@@ -49,7 +49,7 @@ namespace freemount
 			}
 			else
 			{
-				return n_bytes != 0 ? n_bytes : -1;
+				return n_bytes != 0 ? ssize_t( n_bytes ) : -1;
 			}
 		}
 		
