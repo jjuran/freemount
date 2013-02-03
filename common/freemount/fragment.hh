@@ -27,6 +27,14 @@ namespace freemount
 	
 	#define FREEMOUNT_FRAGMENT_HEADER_INITIALIZER  { 0, 0, 0,  0, 0, 0, 0 }
 	
+	enum fragment_type
+	{
+		frag_ping = 1,
+		frag_pong = 2,
+		
+		frag_none = 0
+	};
+	
 }
 
 
