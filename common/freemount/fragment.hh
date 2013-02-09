@@ -32,7 +32,18 @@ namespace freemount
 		frag_ping = 1,
 		frag_pong = 2,
 		
+		frag_req = 3,
+		frag_eom = 4,
+		
 		frag_none = 0
+	};
+	
+	enum request_type
+	{
+		req_vers = 1,
+		req_auth = 2,
+		
+		req_none = 0
 	};
 	
 }
