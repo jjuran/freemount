@@ -18,6 +18,9 @@
 using namespace freemount;
 
 
+static bool auth_pending = false;
+
+
 static int fragment_handler( void* that, const fragment_header& fragment )
 {
 	switch ( fragment.type )
@@ -26,6 +29,34 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			write( STDERR_FILENO, "ping\n", 5 );
 			
 			send_empty_fragment( STDOUT_FILENO, frag_pong );
+			break;
+		
+		case frag_req:
+			switch ( fragment.data )
+			{
+				case req_auth:
+					auth_pending = true;
+					
+					write( STDERR_FILENO, "auth...", 7 );
+					break;
+				
+				default:
+					abort();
+			}
+			
+			break;
+		
+		case frag_eom:
+			if ( !auth_pending )
+			{
+				abort();
+			}
+			
+			auth_pending = false;
+			
+			write( STDERR_FILENO, " ok\n", 4 );
+			
+			send_empty_fragment( STDOUT_FILENO, frag_eom );  // send response
 			break;
 		
 		default:
