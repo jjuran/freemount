@@ -29,6 +29,12 @@ static void send_response( int result )
 		
 		send_empty_fragment( STDOUT_FILENO, frag_eom );
 	}
+	else
+	{
+		write( STDERR_FILENO, " err\n", 5 );
+		
+		send_u32_fragment( STDOUT_FILENO, frag_err, -result );
+	}
 }
 
 static int fragment_handler( void* that, const fragment_header& fragment )
@@ -57,6 +63,10 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_eom:
+			int err;
+			
+			err = 0;
+			
 			switch ( pending_request_type )
 			{
 				case req_auth:
@@ -68,7 +78,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			
 			pending_request_type = req_none;
 			
-			send_response( 0 );
+			send_response( err );
 			break;
 		
 		default:

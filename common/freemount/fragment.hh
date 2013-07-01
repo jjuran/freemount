@@ -34,6 +34,7 @@ namespace freemount
 		
 		frag_req = 3,
 		frag_eom = 4,
+		frag_err = 5,
 		
 		frag_none = 0
 	};
