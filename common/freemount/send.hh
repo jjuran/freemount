@@ -17,6 +17,8 @@ namespace freemount
 	
 	void send_empty_request( int fd, uint8_t req_type );
 	
+	void send_u32_fragment( int fd, uint8_t type, uint32_t data );
+	
 }
 
 #endif

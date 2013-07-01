@@ -5,6 +5,9 @@
 
 #include "freemount/send.hh"
 
+// iota
+#include "iota/endian.hh"
+
 // freemount
 #include "freemount/fragment.hh"
 #include "freemount/write_in_full.hh"
@@ -35,6 +38,28 @@ namespace freemount
 		headers[1].type = frag_eom;
 		
 		write_in_full( fd, headers, sizeof headers );
+	}
+	
+	void send_u32_fragment( int fd, uint8_t type, uint32_t data )
+	{
+		const size_t buffer_size = sizeof (fragment_header) + sizeof (uint32_t);
+		
+		uint32_t buffer[ buffer_size / sizeof (uint32_t) ] = { 0 };
+		
+		uint8_t* p = (uint8_t*) buffer;
+		
+		/*
+			0: frag header part 0
+			4: frag header part 1
+			8: data
+		*/
+		
+		p[3] = sizeof (uint32_t);
+		p[6] = type;
+		
+		buffer[2] = iota::big_u32( data );
+		
+		write_in_full( fd, buffer, sizeof buffer );
 	}
 	
 }
