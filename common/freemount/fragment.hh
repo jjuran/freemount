@@ -22,7 +22,7 @@ namespace freemount
 		uint8_t   c_id;  // chain id
 		uint8_t   r_id;  // request id
 		uint8_t   type;  // fragment type
-		uint8_t   _2;
+		uint8_t   data;  // request type
 	};
 	
 	#define FREEMOUNT_FRAGMENT_HEADER_INITIALIZER  { 0, 0, 0,  0, 0, 0, 0 }
@@ -32,7 +32,18 @@ namespace freemount
 		frag_ping = 1,
 		frag_pong = 2,
 		
+		frag_req = 3,
+		frag_eom = 4,
+		
 		frag_none = 0
+	};
+	
+	enum request_type
+	{
+		req_vers = 1,
+		req_auth = 2,
+		
+		req_none = 0
 	};
 	
 }

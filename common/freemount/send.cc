@@ -22,5 +22,20 @@ namespace freemount
 		write_in_full( fd, &header, sizeof header );
 	}
 	
+	void send_empty_request( int fd, uint8_t req_type )
+	{
+		fragment_header headers[2] =
+		{
+			FREEMOUNT_FRAGMENT_HEADER_INITIALIZER,
+			FREEMOUNT_FRAGMENT_HEADER_INITIALIZER
+		};
+		
+		headers[0].type = frag_req;
+		headers[0].data = req_type;
+		headers[1].type = frag_eom;
+		
+		write_in_full( fd, headers, sizeof headers );
+	}
+	
 }
 
