@@ -21,6 +21,16 @@ using namespace freemount;
 static request_type pending_request_type = req_none;
 
 
+static void send_response( int result )
+{
+	if ( result >= 0 )
+	{
+		write( STDERR_FILENO, " ok\n", 4 );
+		
+		send_empty_fragment( STDOUT_FILENO, frag_eom );
+	}
+}
+
 static int fragment_handler( void* that, const fragment_header& fragment )
 {
 	switch ( fragment.type )
@@ -58,9 +68,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			
 			pending_request_type = req_none;
 			
-			write( STDERR_FILENO, " ok\n", 4 );
-			
-			send_empty_fragment( STDOUT_FILENO, frag_eom );  // send response
+			send_response( 0 );
 			break;
 		
 		default:
