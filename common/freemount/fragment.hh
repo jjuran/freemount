@@ -36,6 +36,12 @@ namespace freemount
 		frag_eom = 4,
 		frag_err = 5,
 		
+		frag_file_path = 9,
+		
+		frag_stat_mode = 16,
+		frag_stat_nlink = 17,
+		frag_stat_size = 18,
+		
 		frag_none = 0
 	};
 	
@@ -43,6 +49,7 @@ namespace freemount
 	{
 		req_vers = 1,
 		req_auth = 2,
+		req_stat = 3,
 		
 		req_none = 0
 	};
