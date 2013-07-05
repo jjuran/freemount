@@ -84,5 +84,27 @@ namespace freemount
 		write_in_full( fd, buffer, sizeof buffer );
 	}
 	
+	void send_string_fragment( int fd, uint8_t type, const char* data, uint16_t length )
+	{
+		const size_t buffer_size = sizeof (fragment_header) + length;
+		
+		fragment_header h = { 0 };
+		
+		h.big_size = iota::big_u16( length );
+		
+		h.type = type;
+		
+		write_in_full( fd, &h, sizeof h );
+		
+		write_in_full( fd, data, length );
+		
+		if ( length & 0x3 )
+		{
+			const uint32_t zero = 0;
+			
+			write_in_full( fd, &zero, 4 - (length & 0x3) );
+		}
+	}
+	
 }
 
