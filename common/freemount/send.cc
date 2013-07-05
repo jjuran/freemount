@@ -62,5 +62,27 @@ namespace freemount
 		write_in_full( fd, buffer, sizeof buffer );
 	}
 	
+	void send_u64_fragment( int fd, uint8_t type, uint64_t data )
+	{
+		const size_t buffer_size = sizeof (fragment_header) + sizeof (uint64_t);
+		
+		uint64_t buffer[ buffer_size / sizeof (uint64_t) ] = { 0 };
+		
+		uint8_t* p = (uint8_t*) buffer;
+		
+		/*
+			0: frag header
+			4: frag header part 1
+			8: data
+		*/
+		
+		p[3] = sizeof (uint64_t);
+		p[6] = type;
+		
+		buffer[1] = iota::big_u64( data );
+		
+		write_in_full( fd, buffer, sizeof buffer );
+	}
+	
 }
 
