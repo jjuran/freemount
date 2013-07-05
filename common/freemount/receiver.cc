@@ -19,6 +19,13 @@ namespace freemount
 	{
 	}
 	
+	static inline size_t pad( size_t value, unsigned multiple )
+	{
+		const unsigned mask = multiple - 1;
+		
+		return (value + mask) & ~mask;
+	}
+	
 	void data_receiver::recv_bytes( const char* buffer, std::size_t n )
 	{
 		its_buffer.append( buffer, n );
@@ -34,13 +41,13 @@ namespace freemount
 			
 			const size_t payload_size = iota::u16_from_big( h.big_size );
 			
-			if ( data_size - sizeof (fragment_header) < payload_size )
+			const size_t fragment_size = sizeof (fragment_header)
+			                           + pad( payload_size, 4 );
+			
+			if ( data_size < fragment_size )
 			{
 				break;
 			}
-			
-			const size_t fragment_size = sizeof (fragment_header)
-			                           + payload_size;
 			
 			its_handler( its_context, h );
 			
