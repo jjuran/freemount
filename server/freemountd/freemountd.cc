@@ -4,6 +4,7 @@
 */
 
 // POSIX
+#include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
@@ -24,6 +25,7 @@
 #include "vfs/functions/root.hh"
 #include "vfs/node/types/posix.hh"
 #include "vfs/primitives/listdir.hh"
+#include "vfs/primitives/slurp.hh"
 #include "vfs/primitives/stat.hh"
 
 // freemount
@@ -119,6 +121,43 @@ static int list()
 	return 0;
 }
 
+static int read()
+{
+	const char* path = file_path.c_str();
+	
+	plus::string contents;
+	
+	try
+	{
+		vfs::node_ptr that = vfs::resolve_pathname( path, vfs::root() );
+		
+		contents = slurp( that.get() );
+	}
+	catch ( const p7::errno_t& err )
+	{
+		return -err;
+	}
+	
+	const char* p   =     contents.data();
+	const char* end = p + contents.size();
+	
+	while ( end - p >= 4096 )
+	{
+		send_string_fragment( STDOUT_FILENO, frag_io_data, p, 4096 );
+		
+		p += 4096;
+	}
+	
+	if ( end - p > 0 )
+	{
+		send_string_fragment( STDOUT_FILENO, frag_io_data, p, end - p );
+	}
+	
+	send_empty_fragment( STDOUT_FILENO, frag_io_eof );
+	
+	return 0;
+}
+
 static void send_response( int result )
 {
 	if ( result >= 0 )
@@ -160,6 +199,10 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 					write( STDERR_FILENO, "list...", 7 );
 					break;
 				
+				case req_read:
+					write( STDERR_FILENO, "read...", 7 );
+					break;
+				
 				default:
 					abort();
 			}
@@ -173,6 +216,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			{
 				case req_stat:
 				case req_list:
+				case req_read:
 					break;
 				
 				default:
@@ -198,6 +242,10 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 				
 				case req_list:
 					err = list();
+					break;
+				
+				case req_read:
+					err = read();
 					break;
 				
 				default:

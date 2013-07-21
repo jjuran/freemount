@@ -38,6 +38,9 @@ namespace freemount
 		
 		frag_file_path = 9,
 		
+		frag_io_data = 12,
+		frag_io_eof = 13,
+		
 		frag_stat_mode = 16,
 		frag_stat_nlink = 17,
 		frag_stat_size = 18,
@@ -53,6 +56,7 @@ namespace freemount
 		req_auth = 2,
 		req_stat = 3,
 		req_list = 4,
+		req_read = 5,
 		
 		req_none = 0
 	};
