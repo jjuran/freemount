@@ -5,7 +5,6 @@
 
 // POSIX
 #include <unistd.h>
-#include <sys/socket.h>
 
 // Standard C
 #include <stdlib.h>
@@ -25,6 +24,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 	{
 		case frag_eom:
 			write( STDERR_FILENO, "auth ok\n", 8 );
+			exit( 0 );
 			break;
 		
 		default:
@@ -37,8 +37,6 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 int main( int argc, char** argv )
 {
 	send_empty_request( STDOUT_FILENO, req_auth );
-	
-	shutdown( STDOUT_FILENO, SHUT_WR );
 	
 	data_receiver r( &fragment_handler, NULL );
 	
