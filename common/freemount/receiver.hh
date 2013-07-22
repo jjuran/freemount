@@ -6,8 +6,8 @@
 #ifndef FREEMOUNT_RECEIVER_HH
 #define FREEMOUNT_RECEIVER_HH
 
-// Standard C/C++
-#include <cstddef>
+// plus
+#include "plus/var_string.hh"
 
 // freemount
 #include "freemount/fragment.hh"
@@ -21,6 +21,8 @@ namespace freemount
 	class data_receiver
 	{
 		private:
+			plus::var_string  its_buffer;
+			
 			fragment_handler_function  its_handler;
 			void*                      its_context;
 		
