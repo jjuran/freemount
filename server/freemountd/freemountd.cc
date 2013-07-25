@@ -17,10 +17,13 @@
 #include "poseven/types/errno_t.hh"
 
 // vfs
+#include "vfs/dir_entry.hh"
+#include "vfs/dir_contents_impl.hh"
 #include "vfs/node.hh"
 #include "vfs/functions/resolve_pathname.hh"
 #include "vfs/functions/root.hh"
 #include "vfs/node/types/posix.hh"
+#include "vfs/primitives/listdir.hh"
 #include "vfs/primitives/stat.hh"
 
 // freemount
@@ -87,6 +90,35 @@ static int stat()
 	return 0;
 }
 
+static int list()
+{
+	const char* path = file_path.c_str();
+	
+	vfs::dir_contents_impl contents;
+	
+	try
+	{
+		vfs::node_ptr that = vfs::resolve_pathname( path, vfs::root() );
+		
+		listdir( that.get(), contents );
+	}
+	catch ( const p7::errno_t& err )
+	{
+		return -err;
+	}
+	
+	for ( unsigned i = 0;  i < contents.size();  ++i )
+	{
+		const vfs::dir_entry& entry = contents.at( i );
+		
+		const plus::string& name = entry.name;
+		
+		send_string_fragment( STDOUT_FILENO, frag_dentry_name, name.data(), name.size() );
+	}
+	
+	return 0;
+}
+
 static void send_response( int result )
 {
 	if ( result >= 0 )
@@ -124,6 +156,10 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 					write( STDERR_FILENO, "stat...", 7 );
 					break;
 				
+				case req_list:
+					write( STDERR_FILENO, "list...", 7 );
+					break;
+				
 				default:
 					abort();
 			}
@@ -133,9 +169,14 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_file_path:
-			if ( pending_request_type != req_stat )
+			switch ( pending_request_type )
 			{
-				abort();
+				case req_stat:
+				case req_list:
+					break;
+				
+				default:
+					abort();
 			}
 			
 			file_path.assign( (const char*) (&fragment + 1), iota::u16_from_big( fragment.big_size ) );
@@ -153,6 +194,10 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 				
 				case req_stat:
 					err = stat();
+					break;
+				
+				case req_list:
+					err = list();
 					break;
 				
 				default:

@@ -42,6 +42,8 @@ namespace freemount
 		frag_stat_nlink = 17,
 		frag_stat_size = 18,
 		
+		frag_dentry_name = 32,
+		
 		frag_none = 0
 	};
 	
@@ -50,6 +52,7 @@ namespace freemount
 		req_vers = 1,
 		req_auth = 2,
 		req_stat = 3,
+		req_list = 4,
 		
 		req_none = 0
 	};
