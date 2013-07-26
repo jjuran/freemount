@@ -44,13 +44,13 @@ static void report_error( uint32_t err )
 {
 	write( STDERR_FILENO, "fmdir: ", 7 );
 	
-	write( STDOUT_FILENO, the_path, strlen( the_path ) );
+	write( STDERR_FILENO, the_path, strlen( the_path ) );
 	
 	write( STDERR_FILENO, ": ", 2 );
 	
 	const char* error = strerror( err );
 	
-	write( STDOUT_FILENO, error, strlen( error ) );
+	write( STDERR_FILENO, error, strlen( error ) );
 	
 	write( STDERR_FILENO, "\n", 1 );
 }
@@ -104,7 +104,7 @@ int main( int argc, char** argv )
 	}
 	
 	the_path = argv[1];
-		
+	
 	send_list_request( the_path );
 	
 	data_receiver r( &fragment_handler, NULL );
