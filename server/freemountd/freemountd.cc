@@ -66,7 +66,7 @@ static int stat()
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( path, vfs::root() );
+		vfs::node_ptr that = vfs::resolve_pathname( path, *vfs::root() );
 		
 		stat( that.get(), sb );
 	}
@@ -100,7 +100,7 @@ static int list()
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( path, vfs::root() );
+		vfs::node_ptr that = vfs::resolve_pathname( path, *vfs::root() );
 		
 		listdir( that.get(), contents );
 	}
@@ -129,7 +129,7 @@ static int read()
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( path, vfs::root() );
+		vfs::node_ptr that = vfs::resolve_pathname( path, *vfs::root() );
 		
 		contents = slurp( that.get() );
 	}
