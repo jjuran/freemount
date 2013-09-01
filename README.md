@@ -1,6 +1,9 @@
 Freemount
 =========
 
+Summary
+-------
+
 Freemount is a network filesystem protocol.  It runs over a reliable transport medium, such as local sockets, TCP, TLS, and SSH.
 
 Freemount's key features include
@@ -14,6 +17,16 @@ Freemount's key features include
 	- related requests can be combined, e.g. open/write-fd/close -> write-path
 
 Freemount is designed to be the optimal protocol for FORGE (the File-Oriented, Reflective Graphical Environment).
+
+Documentation
+-------------
+
+* [Overview][]
+
+[Overview]:  <NOTES/overview.md>
+
+Licensing
+---------
 
 The provided reference implementation is copyright Joshua Juran, and released under the [GNU GPL version 3][GPL] (or later).
 
