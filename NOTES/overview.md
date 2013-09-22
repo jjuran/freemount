@@ -4,7 +4,7 @@ Freemount Overview
 Introduction
 ------------
 
-Freemount is a client-server, network filesystem protocol.  It's defined in terms of a reliable transport medium.  Initial development assumes a stream-oriented connection, though in theory the protocol is adaptable to a datagram service (provided that it's reliable -- either SCTP or a UDP wrapper might be suitable here).  In practice, Freemount will be used atop a secure layer such as SSL/TLS or an SSH tunnel (or in special cases, over a local-domain socket).
+Freemount is a client-server network filesystem protocol.  It's defined in terms of a reliable transport medium.  Initial development assumes a stream-oriented connection, though in theory the protocol is adaptable to a datagram service (provided that it's reliable -- either SCTP or a UDP wrapper might be suitable here).  In practice, Freemount will be used atop a secure layer such as SSL/TLS or an SSH tunnel (or in special cases, over a local-domain socket).
 
 Features
 --------
