@@ -9,7 +9,7 @@ Freemount is a client-server, network filesystem protocol.  It's defined in term
 Features
 --------
 
-While Freemount is intended to be fully usable as a file sharing system (e.g. as a replacement for Appleshare), its primary purpose is to be a communication protocol for FORGE (File-Oriented, Reflective Graphical Environment).  FORGE requires additional semantics that aren't available in typical network filesystems:
+While Freemount is intended to be fully usable as a file sharing system (e.g. as a replacement for AppleShare), its primary purpose is to be a communication protocol for FORGE (File-Oriented, Reflective Graphical Environment).  FORGE requires additional semantics that aren't available in typical network filesystems:
 
 * non-local named streams (e.g. a FIFO written by the server and read by the client)
 * select/poll operations (e.g. block until one of several files is readable)
