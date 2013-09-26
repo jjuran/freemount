@@ -25,11 +25,14 @@
 // vfs
 #include "vfs/dir_contents.hh"
 #include "vfs/dir_entry.hh"
+#include "vfs/filehandle.hh"
 #include "vfs/node.hh"
+#include "vfs/filehandle/primitives/pread.hh"
 #include "vfs/functions/resolve_pathname.hh"
 #include "vfs/functions/root.hh"
 #include "vfs/node/types/posix.hh"
 #include "vfs/primitives/listdir.hh"
+#include "vfs/primitives/open.hh"
 #include "vfs/primitives/slurp.hh"
 #include "vfs/primitives/stat.hh"
 
@@ -136,32 +139,44 @@ static int read( uint8_t r_id, const request& r )
 {
 	const char* path = r.file_path.c_str();
 	
-	plus::string contents;
+	vfs::filehandle_ptr file;
 	
 	try
 	{
 		vfs::node_ptr that = vfs::resolve_pathname( path, *vfs::root() );
 		
-		contents = slurp( *that );
+		file = open( *that, O_RDONLY, 0 );
 	}
 	catch ( const p7::errno_t& err )
 	{
 		return -err;
 	}
 	
-	const char* p   =     contents.data();
-	const char* end = p + contents.size();
+	off_t position = 0;
 	
-	while ( end - p >= 4096 )
+	while ( true )
 	{
-		send_string_fragment( STDOUT_FILENO, frag_io_data, p, 4096, r_id );
+		char buffer[ 4096 ];
 		
-		p += 4096;
-	}
-	
-	if ( end - p > 0 )
-	{
-		send_string_fragment( STDOUT_FILENO, frag_io_data, p, end - p, r_id );
+		ssize_t n_read;
+		
+		try
+		{
+			n_read = pread( *file, buffer, sizeof buffer, position );
+		}
+		catch ( const p7::errno_t& err )
+		{
+			return -err;
+		}
+		
+		if ( n_read == 0 )
+		{
+			break;
+		}
+		
+		send_string_fragment( STDOUT_FILENO, frag_io_data, buffer, n_read, r_id );
+		
+		position += n_read;
 	}
 	
 	send_empty_fragment( STDOUT_FILENO, frag_io_eof, r_id );
