@@ -8,8 +8,11 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-// standard C
+// Standard C
 #include <stdlib.h>
+
+// Standard C++
+#include <map>
 
 // iota
 #include "iota/endian.hh"
@@ -53,14 +56,19 @@ namespace vfs
 	
 }
 
-static request_type pending_request_type = req_none;
-
-static plus::string file_path;
-
-
-static int stat()
+struct request
 {
-	const char* path = file_path.c_str();
+	request_type type;
+	
+	plus::string file_path;
+};
+
+static std::map< uint8_t, request > the_requests;
+
+
+static int stat( uint8_t r_id, const request& r )
+{
+	const char* path = r.file_path.c_str();
 	
 	struct stat sb;
 	
@@ -77,24 +85,24 @@ static int stat()
 	
 	const mode_t mode = sb.st_mode;
 	
-	send_u32_fragment( STDOUT_FILENO, frag_stat_mode, mode );
+	send_u32_fragment( STDOUT_FILENO, frag_stat_mode, mode, r_id );
 	
 	if ( S_ISDIR( mode )  &&  sb.st_nlink > 1 )
 	{
-		send_u32_fragment( STDOUT_FILENO, frag_stat_nlink, sb.st_nlink );
+		send_u32_fragment( STDOUT_FILENO, frag_stat_nlink, sb.st_nlink, r_id );
 	}
 	
 	if ( S_ISREG( mode ) )
 	{
-		send_u64_fragment( STDOUT_FILENO, frag_stat_size, sb.st_size );
+		send_u64_fragment( STDOUT_FILENO, frag_stat_size, sb.st_size, r_id );
 	}
 	
 	return 0;
 }
 
-static int list()
+static int list( uint8_t r_id, const request& r )
 {
-	const char* path = file_path.c_str();
+	const char* path = r.file_path.c_str();
 	
 	vfs::dir_contents_impl contents;
 	
@@ -115,15 +123,15 @@ static int list()
 		
 		const plus::string& name = entry.name;
 		
-		send_string_fragment( STDOUT_FILENO, frag_dentry_name, name.data(), name.size() );
+		send_string_fragment( STDOUT_FILENO, frag_dentry_name, name.data(), name.size(), r_id );
 	}
 	
 	return 0;
 }
 
-static int read()
+static int read( uint8_t r_id, const request& r )
 {
-	const char* path = file_path.c_str();
+	const char* path = r.file_path.c_str();
 	
 	plus::string contents;
 	
@@ -143,76 +151,103 @@ static int read()
 	
 	while ( end - p >= 4096 )
 	{
-		send_string_fragment( STDOUT_FILENO, frag_io_data, p, 4096 );
+		send_string_fragment( STDOUT_FILENO, frag_io_data, p, 4096, r_id );
 		
 		p += 4096;
 	}
 	
 	if ( end - p > 0 )
 	{
-		send_string_fragment( STDOUT_FILENO, frag_io_data, p, end - p );
+		send_string_fragment( STDOUT_FILENO, frag_io_data, p, end - p, r_id );
 	}
 	
-	send_empty_fragment( STDOUT_FILENO, frag_io_eof );
+	send_empty_fragment( STDOUT_FILENO, frag_io_eof, r_id );
 	
 	return 0;
 }
 
-static void send_response( int result )
+static void send_response( int result, uint8_t r_id )
 {
 	if ( result >= 0 )
 	{
 		write( STDERR_FILENO, " ok\n", 4 );
 		
-		send_empty_fragment( STDOUT_FILENO, frag_eom );
+		send_empty_fragment( STDOUT_FILENO, frag_eom, r_id );
 	}
 	else
 	{
 		write( STDERR_FILENO, " err\n", 5 );
 		
-		send_u32_fragment( STDOUT_FILENO, frag_err, -result );
+		send_u32_fragment( STDOUT_FILENO, frag_err, -result, r_id );
 	}
 }
 
 static int fragment_handler( void* that, const fragment_header& fragment )
 {
+	if ( fragment.type == frag_ping )
+	{
+		write( STDERR_FILENO, "ping\n", 5 );
+		
+		send_empty_fragment( STDOUT_FILENO, frag_pong );
+		
+		return 0;
+	}
+	
+	const uint8_t request_id = fragment.r_id;
+	
+	typedef std::map< uint8_t, request >::iterator Iter;
+	
+	const Iter it = the_requests.find( request_id );
+	
+	if ( fragment.type == frag_req )
+	{
+		switch ( fragment.data )
+		{
+			case req_auth:
+				write( STDERR_FILENO, "auth...", 7 );
+				break;
+			
+			case req_stat:
+				write( STDERR_FILENO, "stat...", 7 );
+				break;
+			
+			case req_list:
+				write( STDERR_FILENO, "list...", 7 );
+				break;
+			
+			case req_read:
+				write( STDERR_FILENO, "read...", 7 );
+				break;
+			
+			default:
+				abort();
+		}
+		
+		if ( it != the_requests.end() )
+		{
+			write( STDERR_FILENO, "DUP\n", 4 );
+			
+			abort();
+		}
+		
+		the_requests[ request_id ].type = request_type( fragment.data );
+		
+		return 0;
+	}
+	
+	if ( it == the_requests.end() )
+	{
+		write( STDERR_FILENO, "BAD id\n", 7 );
+		
+		abort();
+	}
+	
+	request& r = it->second;
+	
 	switch ( fragment.type )
 	{
-		case frag_ping:
-			write( STDERR_FILENO, "ping\n", 5 );
-			
-			send_empty_fragment( STDOUT_FILENO, frag_pong );
-			break;
-		
-		case frag_req:
-			switch ( fragment.data )
-			{
-				case req_auth:
-					write( STDERR_FILENO, "auth...", 7 );
-					break;
-				
-				case req_stat:
-					write( STDERR_FILENO, "stat...", 7 );
-					break;
-				
-				case req_list:
-					write( STDERR_FILENO, "list...", 7 );
-					break;
-				
-				case req_read:
-					write( STDERR_FILENO, "read...", 7 );
-					break;
-				
-				default:
-					abort();
-			}
-			
-			pending_request_type = request_type( fragment.data );
-			
-			break;
-		
 		case frag_file_path:
-			switch ( pending_request_type )
+			switch ( r.type )
 			{
 				case req_stat:
 				case req_list:
@@ -223,7 +258,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 					abort();
 			}
 			
-			file_path.assign( (const char*) (&fragment + 1), iota::u16_from_big( fragment.big_size ) );
+			r.file_path.assign( (const char*) (&fragment + 1), iota::u16_from_big( fragment.big_size ) );
 			break;
 		
 		case frag_eom:
@@ -231,30 +266,30 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			
 			err = 0;
 			
-			switch ( pending_request_type )
+			switch ( r.type )
 			{
 				case req_auth:
 					break;
 				
 				case req_stat:
-					err = stat();
+					err = stat( request_id, r );
 					break;
 				
 				case req_list:
-					err = list();
+					err = list( request_id, r );
 					break;
 				
 				case req_read:
-					err = read();
+					err = read( request_id, r );
 					break;
 				
 				default:
 					abort();
 			}
 			
-			pending_request_type = req_none;
+			the_requests.erase( request_id );
 			
-			send_response( err );
+			send_response( err, request_id );
 			break;
 		
 		default:
