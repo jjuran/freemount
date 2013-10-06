@@ -47,13 +47,21 @@ namespace freemount
 		frag_err = 5,
 		
 		frag_file_path = 9,
+		frag_file_fd = 10,
 		
+		frag_io_count = 11,
 		frag_io_data = 12,
 		frag_io_eof = 13,
+		
+		frag_buffer_size = 14,
+		frag_seek_offset = 15,
 		
 		frag_stat_mode = 16,
 		frag_stat_nlink = 17,
 		frag_stat_size = 18,
+		
+		frag_flags = 24,
+		frag_create_mode = frag_stat_mode,
 		
 		frag_dentry_name = 32,
 		
@@ -67,6 +75,10 @@ namespace freemount
 		req_stat = 3,
 		req_list = 4,
 		req_read = 5,
+		req_write = 6,
+		req_open  = 7,
+		req_close = 8,
+		req_link = 9,
 		
 		req_none = 0
 	};
