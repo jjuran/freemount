@@ -19,6 +19,7 @@ namespace freemount
 	struct request
 	{
 		plus::string path;
+		plus::string data;
 		
 		request_type type;
 		

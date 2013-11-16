@@ -23,7 +23,9 @@
 #include "vfs/node.hh"
 #include "vfs/filehandle/primitives/geteof.hh"
 #include "vfs/filehandle/primitives/pread.hh"
+#include "vfs/filehandle/primitives/pwrite.hh"
 #include "vfs/filehandle/primitives/read.hh"
+#include "vfs/filehandle/primitives/write.hh"
 #include "vfs/functions/resolve_pathname.hh"
 #include "vfs/primitives/listdir.hh"
 #include "vfs/primitives/open.hh"
@@ -42,6 +44,9 @@
 namespace freemount {
 
 namespace p7 = poseven;
+
+
+using ::write;
 
 
 static int stat( session& s, uint8_t r_id, const request& r )
@@ -180,6 +185,45 @@ static int read( session& s, uint8_t r_id, const request& r )
 	return 0;
 }
 
+static int write( session& s, uint8_t r_id, const request& r )
+{
+	ssize_t n_written = -1;
+	
+	try
+	{
+		vfs::filehandle_ptr file;
+		
+		if ( !r.path.empty() )
+		{
+			vfs::node_ptr that = vfs::resolve_pathname( s.root(), r.path, s.cwd() );
+			
+			int open_flags = r.offset < 0 ? O_WRONLY | O_TRUNC
+			                              : O_WRONLY;
+			
+			file = open( *that, open_flags, 0 );
+		}
+		else
+		{
+			return -ENOENT;  // empty pathname
+		}
+		
+		const char* buffer = r.data.data();
+		
+		const size_t size = r.data.size();
+		
+		const off_t offset = r.offset;
+		
+		n_written = offset >= 0 ? pwrite( *file, buffer, size, offset )
+		                        : write( *file, buffer, size );
+	}
+	catch ( const p7::errno_t& err )
+	{
+		return -err;
+	}
+	
+	return 0;
+}
+
 static void send_response( send_queue& queue, int result, uint8_t r_id )
 {
 	if ( result >= 0 )
@@ -261,6 +305,10 @@ int frame_handler( void* that, const frame_header& frame )
 				write( STDERR_FILENO, STR_LEN( "read..." ) );
 				break;
 			
+			case req_write:
+				write( STDERR_FILENO, STR_LEN( "write..." ) );
+				break;
+			
 			default:
 				abort();
 		}
@@ -284,6 +332,8 @@ int frame_handler( void* that, const frame_header& frame )
 		abort();
 	}
 	
+	const char* data = (const char*) get_data( frame );
+	
 	request& r = *req;
 	
 	switch ( frame.type )
@@ -294,13 +344,18 @@ int frame_handler( void* that, const frame_header& frame )
 				case req_stat:
 				case req_list:
 				case req_read:
+				case req_write:
 					break;
 				
 				default:
 					abort();
 			}
 			
-			r.path.assign( (const char*) get_data( frame ), get_size( frame ) );
+			r.path.assign( data, get_size( frame ) );
+			break;
+		
+		case Frame_send_data:
+			r.data.assign( data, get_size( frame ) );
 			break;
 		
 		case Frame_io_count:
@@ -331,6 +386,10 @@ int frame_handler( void* that, const frame_header& frame )
 				
 				case req_read:
 					err = read( s, request_id, r );
+					break;
+				
+				case req_write:
+					err = write( s, request_id, r );
 					break;
 				
 				default:
