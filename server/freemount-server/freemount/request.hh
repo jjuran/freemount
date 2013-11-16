@@ -6,6 +6,9 @@
 #ifndef FREEMOUNT_REQUEST_HH
 #define FREEMOUNT_REQUEST_HH
 
+// POSIX
+#include <sys/types.h>
+
 // plus
 #include "plus/string.hh"
 
@@ -26,6 +29,8 @@ namespace freemount
 		int64_t  n;
 		off_t    offset;
 		
+		int fd;
+		
 		request( request_type type = req_none );
 	};
 	
@@ -33,7 +38,8 @@ namespace freemount
 	:
 		type( type ),
 		n( -1 ),
-		offset( -1 )
+		offset( -1 ),
+		fd( -1 )
 	{
 	}
 	

@@ -20,6 +20,7 @@
 #include "vfs/dir_contents.hh"
 #include "vfs/dir_entry.hh"
 #include "vfs/filehandle.hh"
+#include "vfs/filehandle_ptr.hh"
 #include "vfs/node.hh"
 #include "vfs/filehandle/primitives/geteof.hh"
 #include "vfs/filehandle/primitives/pread.hh"
@@ -113,6 +114,32 @@ int list( session& s, uint8_t r_id, const request& r )
 		const plus::string& name = entry.name;
 		
 		queue_string( s.queue(), Frame_dentry_name, name.data(), name.size(), r_id );
+	}
+	
+	return 0;
+}
+
+static
+int open( session& s, uint8_t r_id, const request& r )
+{
+	int fd = r.fd;
+	
+	if ( unsigned( fd ) > 255 )
+	{
+		return -EBADF;
+	}
+	
+	try
+	{
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), r.path, s.cwd() );
+		
+		vfs::filehandle_ptr file = open( *that, O_WRONLY | O_CREAT, 0 );
+		
+		s.set_open_file( fd, file.get() );
+	}
+	catch ( const p7::errno_t& err )
+	{
+		return -err;
 	}
 	
 	return 0;
@@ -329,6 +356,10 @@ int frame_handler( void* that, const frame_header& frame )
 				write( STDERR_FILENO, STR_LEN( "write..." ) );
 				break;
 			
+			case req_open:
+				write( STDERR_FILENO, STR_LEN( "open..." ) );
+				break;
+			
 			default:
 				abort();
 		}
@@ -365,6 +396,7 @@ int frame_handler( void* that, const frame_header& frame )
 				case req_list:
 				case req_read:
 				case req_write:
+				case req_open:
 					break;
 				
 				default:
@@ -372,6 +404,10 @@ int frame_handler( void* that, const frame_header& frame )
 			}
 			
 			r.path.assign( data, get_size( frame ) );
+			break;
+		
+		case Frame_arg_fd:
+			r.fd = get_u32( frame );
 			break;
 		
 		case Frame_send_data:
@@ -415,6 +451,10 @@ int frame_handler( void* that, const frame_header& frame )
 				
 				case req_write:
 					err = write( s, request_id, r );
+					break;
+				
+				case req_open:
+					err = open( s, request_id, r );
 					break;
 				
 				default:

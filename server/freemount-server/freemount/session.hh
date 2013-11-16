@@ -7,6 +7,8 @@
 #define FREEMOUNT_SESSION_HH
 
 // vfs
+#include "vfs/filehandle.hh"
+#include "vfs/filehandle_ptr.hh"
 #include "vfs/node.hh"
 #include "vfs/node_ptr.hh"
 
@@ -73,9 +75,12 @@ namespace freemount
 	class session
 	{
 		private:
-			static const int n_requests = 1 << 8;  // 256
+			static const int n_requests   = 1 << 8;  // 256
+			static const int n_open_files = 1 << 8;  // 256
 			
 			request_box its_requests[ n_requests ];
+			
+			vfs::filehandle_ptr its_open_files[ n_open_files ];
 			
 			vfs::node_ptr its_root;
 			vfs::node_ptr its_cwd;
@@ -124,6 +129,26 @@ namespace freemount
 				}
 				
 				its_requests[ i ].acquire( r );
+			}
+			
+			vfs::filehandle* get_open_file( int i ) const
+			{
+				if ( unsigned( i ) >= n_open_files )
+				{
+					return 0;  // NULL
+				}
+				
+				return its_open_files[ i ].get();
+			}
+			
+			void set_open_file( int i, vfs::filehandle* h )
+			{
+				if ( unsigned( i ) >= n_open_files )
+				{
+					return;
+				}
+				
+				its_open_files[ i ] = h;
 			}
 	};
 	
