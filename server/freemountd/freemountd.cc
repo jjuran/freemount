@@ -7,9 +7,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 // Standard C
 #include <stdlib.h>
+#include <string.h>
 
 // Standard C++
 #include <map>
@@ -42,7 +44,8 @@ namespace p7 = poseven;
 using namespace freemount;
 
 
-static const char* the_native_root_directory = "/";
+static const char* the_native_root_directory = "/var/freemount";
+
 
 namespace vfs
 {
@@ -299,12 +302,134 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 	return 0;
 }
 
+
+#define STR_LEN( s )  "" s, (sizeof s - 1)
+
+#define ARRAYLEN( array )  (sizeof array / sizeof array[0])
+
+static void bad_usage( const char* text, size_t text_size, const char* arg )
+{
+	const iovec iov[] =
+	{
+		{ (void*) text, text_size    },
+		{ (void*) arg, strlen( arg ) },
+		{ (void*) STR_LEN( "\n" )    },
+	};
+	
+	writev( STDERR_FILENO, iov, ARRAYLEN( iov ) );
+}
+
+#define BAD_USAGE( text, arg )  (bad_usage( STR_LEN( text ": " ), arg ), (char**) NULL)
+
+static const char* find_char( const char* begin, char c )
+{
+	while ( *begin != '\0'  &&  *begin != c )
+	{
+		++begin;
+	}
+	
+	return begin;
+}
+
+static bool option_matches( const char*  option,
+                            size_t       option_size,
+                            const char*  name,
+                            size_t       name_size )
+{
+	return option_size == name_size  &&  memcmp( option, name, name_size ) == 0;
+}
+
+#define OPTION_MATCHES( option, size, name )  option_matches( option, size, STR_LEN( name ) )
+
+static char** get_options( char** argv )
+{
+	if ( *argv == NULL )
+	{
+		// POSIX says we have to check for this
+		return argv;
+	}
+	
+	while ( const char* arg = *++argv )
+	{
+		if ( arg[0] == '-' )
+		{
+			if ( arg[1] == '\0' )
+			{
+				// An "-" argument is not an option and means /dev/fd/0
+				break;
+			}
+			
+			if ( arg[1] == '-' )
+			{
+				// long option or "--"
+				
+				const char* option = arg + 2;
+				
+				if ( *option == '\0' )
+				{
+					++argv;
+					break;
+				}
+				
+				const char* equals = find_char( option, '=' );
+				
+				const size_t size = equals - option;
+				
+				if ( OPTION_MATCHES( option, size, "root" ) )
+				{
+					if ( *equals == '\0' )
+					{
+						++argv;
+						
+						if ( *argv == NULL )
+						{
+							return BAD_USAGE( "Argument required", arg );
+						}
+						
+						the_native_root_directory = *argv;
+					}
+					else
+					{
+						const char* param = equals + 1;
+						
+						if ( param[0] == '\0' )
+						{
+							return BAD_USAGE( "Invalid option", arg );
+						}
+						
+						the_native_root_directory = param;
+					}
+					
+					continue;
+				}
+				
+				return BAD_USAGE( "Unknown option", arg );
+			}
+			
+			// short option
+			
+			const char* opt = arg + 1;
+			
+			return BAD_USAGE( "Unknown option", arg );
+		}
+		
+		// not an option
+		break;
+	}
+	
+	return argv;
+}
+
 int main( int argc, char** argv )
 {
-	if ( argc > 1 )
+	char** params = get_options( argv );
+	
+	if ( params == NULL )
 	{
-		the_native_root_directory = argv[1];
+		return 2;
 	}
+	
+	int n_params = argc - (params - argv);
 	
 	data_receiver r( &fragment_handler, NULL );
 	
