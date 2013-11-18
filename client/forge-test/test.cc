@@ -38,6 +38,9 @@ static int next_fd = 3;
 #define OPEN( path )  \
 	synced_open( protocol_in, protocol_out, next_fd++, STR_LEN( path ) )
 
+#define PUT( path, data )  \
+	synced_put( protocol_in, protocol_out, STR_LEN( path ), STR_LEN( data ) )
+
 int main( int argc, char** argv )
 {
 	if ( argc < 2 )
@@ -64,6 +67,8 @@ int main( int argc, char** argv )
 	{
 		int lock_fd   = OPEN( TEST_PORT "/lock"   );
 		int window_fd = OPEN( TEST_PORT "/window" );
+		
+		PUT( TEST_PORT "/w/.~title", "Test" );
 	}
 	catch ( const path_error& e )
 	{
