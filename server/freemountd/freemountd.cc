@@ -21,8 +21,8 @@
 #include "poseven/types/errno_t.hh"
 
 // vfs
+#include "vfs/dir_contents.hh"
 #include "vfs/dir_entry.hh"
-#include "vfs/dir_contents_impl.hh"
 #include "vfs/node.hh"
 #include "vfs/functions/resolve_pathname.hh"
 #include "vfs/functions/root.hh"
@@ -104,7 +104,7 @@ static int list( uint8_t r_id, const request& r )
 {
 	const char* path = r.file_path.c_str();
 	
-	vfs::dir_contents_impl contents;
+	vfs::dir_contents contents;
 	
 	try
 	{
