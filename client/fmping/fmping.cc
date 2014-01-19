@@ -11,6 +11,9 @@
 // Standard C
 #include <stdlib.h>
 
+// unet-connect
+#include "unet/connect.hh"
+
 // freemount
 #include "freemount/event_loop.hh"
 #include "freemount/receiver.hh"
@@ -20,8 +23,10 @@
 using namespace freemount;
 
 
-const int protocol_in  = STDIN_FILENO;
-const int protocol_out = STDOUT_FILENO;
+static unet::connection_box the_connection;
+
+static int protocol_in  = -1;
+static int protocol_out = -1;
 
 const int interval = 1;
 
@@ -124,6 +129,25 @@ static void get_options( int argc, char** argv )
 int main( int argc, char** argv )
 {
 	get_options( argc, argv );
+	
+	const char* connector = getenv( "FREEMOUNT_CONNECT" );
+	
+	if ( connector == NULL )
+	{
+		connector = getenv( "UNET_CONNECT" );
+	}
+	
+	if ( connector == NULL )
+	{
+		connector = "uloop";
+	}
+	
+	const char* connector_argv[] = { "/bin/sh", "-c", connector, NULL };
+	
+	the_connection = unet::connect( connector_argv );
+	
+	protocol_in  = the_connection.get_input ();
+	protocol_out = the_connection.get_output();
 	
 	pthread_t event_loop;
 	pthread_t pinger;
