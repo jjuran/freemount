@@ -33,6 +33,12 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 {
 	switch ( fragment.type )
 	{
+		case frag_ping:
+			write( STDERR_FILENO, "ping\n", 5 );
+			
+			send_empty_fragment( protocol_out, frag_pong );
+			break;
+		
 		case frag_pong:
 			write( STDERR_FILENO, "pong\n", 5 );
 			break;
