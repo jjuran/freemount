@@ -20,6 +20,9 @@
 using namespace freemount;
 
 
+const int protocol_in  = STDIN_FILENO;
+const int protocol_out = STDOUT_FILENO;
+
 const int interval = 1;
 
 static int count = -1;
@@ -45,7 +48,7 @@ static void* event_loop_start( void* arg )
 {
 	data_receiver r( &fragment_handler, NULL );
 	
-	event_loop_result = run_event_loop( r, STDIN_FILENO );
+	event_loop_result = run_event_loop( r, protocol_in );
 	
 	return NULL;
 }
@@ -54,7 +57,7 @@ static void* pinger_start( void* arg )
 {
 	for ( ;; )
 	{
-		send_empty_fragment( STDOUT_FILENO, frag_ping );
+		send_empty_fragment( protocol_out, frag_ping );
 		
 		if ( count > 0  &&  --count == 0 )
 		{
@@ -64,7 +67,7 @@ static void* pinger_start( void* arg )
 		sleep( interval );
 	}
 	
-	shutdown( STDOUT_FILENO, SHUT_WR );
+	shutdown( protocol_out, SHUT_WR );
 	
 	return NULL;
 }
