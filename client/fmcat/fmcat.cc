@@ -23,6 +23,9 @@
 #include "freemount/write_in_full.hh"
 
 
+#define STR_LEN( s )  "" s, (sizeof s - 1)
+
+
 using namespace freemount;
 
 
@@ -47,17 +50,17 @@ static uint32_t u32_from_fragment( const fragment_header& fragment )
 
 static void report_error( uint32_t err )
 {
-	write( STDERR_FILENO, "fmcat: ", 7 );
+	write( STDERR_FILENO, STR_LEN( "fmcat: " ) );
 	
 	write( STDERR_FILENO, the_path, strlen( the_path ) );
 	
-	write( STDERR_FILENO, ": ", 2 );
+	write( STDERR_FILENO, STR_LEN( ": " ) );
 	
 	const char* error = strerror( err );
 	
 	write( STDERR_FILENO, error, strlen( error ) );
 	
-	write( STDERR_FILENO, "\n", 1 );
+	write( STDERR_FILENO, STR_LEN( "\n" ) );
 }
 
 static int fragment_handler( void* that, const fragment_header& fragment )
@@ -81,7 +84,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		default:
-			write( STDERR_FILENO, "Unfrag\n", 7 );
+			write( STDERR_FILENO, STR_LEN( "Unfrag\n" ) );
 			
 			abort();
 	}

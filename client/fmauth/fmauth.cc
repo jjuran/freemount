@@ -18,6 +18,9 @@
 #include "freemount/send.hh"
 
 
+#define STR_LEN( s )  "" s, (sizeof s - 1)
+
+
 using namespace freemount;
 
 
@@ -32,7 +35,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 	switch ( fragment.type )
 	{
 		case frag_eom:
-			write( STDOUT_FILENO, "auth ok\n", 8 );
+			write( STDOUT_FILENO, STR_LEN( "auth ok\n" ) );
 			exit( 0 );
 			break;
 		

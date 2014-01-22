@@ -20,6 +20,9 @@
 #include "freemount/send.hh"
 
 
+#define STR_LEN( s )  "" s, (sizeof s - 1)
+
+
 using namespace freemount;
 
 
@@ -39,13 +42,13 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 	switch ( fragment.type )
 	{
 		case frag_ping:
-			write( STDERR_FILENO, "ping\n", 5 );
+			write( STDERR_FILENO, STR_LEN( "ping\n" ) );
 			
 			send_empty_fragment( protocol_out, frag_pong );
 			break;
 		
 		case frag_pong:
-			write( STDERR_FILENO, "pong\n", 5 );
+			write( STDERR_FILENO, STR_LEN( "pong\n" ) );
 			break;
 		
 		default:

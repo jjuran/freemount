@@ -27,6 +27,9 @@
 #include "freemount/write_in_full.hh"
 
 
+#define STR_LEN( s )  "" s, (sizeof s - 1)
+
+
 using namespace freemount;
 
 
@@ -124,17 +127,17 @@ static void print_number( uint64_t number )
 
 static void report_error( uint32_t err )
 {
-	write( STDERR_FILENO, "fmstat: ", 8 );
+	write( STDERR_FILENO, STR_LEN( "fmstat: " ) );
 	
 	write( STDOUT_FILENO, the_path, strlen( the_path ) );
 	
-	write( STDERR_FILENO, ": ", 2 );
+	write( STDERR_FILENO, STR_LEN( ": " ) );
 	
 	const char* error = strerror( err );
 	
-	write( STDOUT_FILENO, error, strlen( error ) );
+	write( STDERR_FILENO, error, strlen( error ) );
 	
-	write( STDERR_FILENO, "\n", 1 );
+	write( STDERR_FILENO, STR_LEN( "\n" ) );
 }
 
 static int fragment_handler( void* that, const fragment_header& fragment )
@@ -154,9 +157,9 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_eom:
-			write( STDERR_FILENO, "  ", 2 );
+			write( STDERR_FILENO, STR_LEN( "  " ) );
 			write( STDOUT_FILENO, the_path, strlen( the_path ) );
-			write( STDERR_FILENO, "\n", 1 );
+			write( STDERR_FILENO, STR_LEN( "\n" ) );
 			exit( 0 );
 			break;
 		
@@ -166,7 +169,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		default:
-			write( STDERR_FILENO, "Unfrag\n", 7 );
+			write( STDERR_FILENO, STR_LEN( "Unfrag\n" ) );
 			
 			abort();
 	}
