@@ -1,6 +1,6 @@
 /*
-	fmping.cc
-	---------
+	fping.cc
+	--------
 */
 
 // POSIX

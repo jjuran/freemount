@@ -1,6 +1,6 @@
 /*
-	fmcat.cc
-	--------
+	fcat.cc
+	-------
 */
 
 // POSIX
@@ -50,7 +50,7 @@ static uint32_t u32_from_fragment( const fragment_header& fragment )
 
 static void report_error( uint32_t err )
 {
-	write( STDERR_FILENO, STR_LEN( "fmcat: " ) );
+	write( STDERR_FILENO, STR_LEN( "fcat: " ) );
 	
 	write( STDERR_FILENO, the_path, strlen( the_path ) );
 	

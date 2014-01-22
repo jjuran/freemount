@@ -1,6 +1,6 @@
 /*
-	fmstat.cc
-	---------
+	fstat.cc
+	--------
 */
 
 // POSIX
@@ -127,7 +127,7 @@ static void print_number( uint64_t number )
 
 static void report_error( uint32_t err )
 {
-	write( STDERR_FILENO, STR_LEN( "fmstat: " ) );
+	write( STDERR_FILENO, STR_LEN( "fstat: " ) );
 	
 	write( STDOUT_FILENO, the_path, strlen( the_path ) );
 	

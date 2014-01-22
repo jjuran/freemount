@@ -1,6 +1,6 @@
 /*
-	fmls.cc
-	-------
+	fls.cc
+	------
 */
 
 // POSIX
@@ -249,7 +249,7 @@ static plus::string string_from_fragment( const fragment_header& fragment )
 
 static void report_error( uint32_t err )
 {
-	write( STDERR_FILENO, STR_LEN( "fmls: " ) );
+	write( STDERR_FILENO, STR_LEN( "fls: " ) );
 	
 	write( STDERR_FILENO, the_path.data(), the_path.size() );
 	

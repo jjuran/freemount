@@ -1,6 +1,6 @@
 /*
-	fmauth.cc
-	---------
+	fauth.cc
+	--------
 */
 
 // POSIX
