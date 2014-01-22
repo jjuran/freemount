@@ -17,6 +17,9 @@
 // gear
 #include "gear/inscribe_decimal.hh"
 
+// unet-connect
+#include "unet/connect.hh"
+
 // freemount
 #include "freemount/event_loop.hh"
 #include "freemount/receiver.hh"
@@ -27,8 +30,10 @@
 using namespace freemount;
 
 
-const int protocol_in  = 6;
-const int protocol_out = 7;
+static unet::connection_box the_connection;
+
+static int protocol_in  = -1;
+static int protocol_out = -1;
 
 
 static const char* the_path;
@@ -191,6 +196,25 @@ int main( int argc, char** argv )
 	}
 	
 	the_path = argv[1];
+	
+	const char* connector = getenv( "FREEMOUNT_CONNECT" );
+	
+	if ( connector == NULL )
+	{
+		connector = getenv( "UNET_CONNECT" );
+	}
+	
+	if ( connector == NULL )
+	{
+		connector = "unet-connect";
+	}
+	
+	const char* connector_argv[] = { "/bin/sh", "-c", connector, NULL };
+	
+	the_connection = unet::connect( connector_argv );
+	
+	protocol_in  = the_connection.get_input ();
+	protocol_out = the_connection.get_output();
 	
 	send_stat_request( the_path );
 	
