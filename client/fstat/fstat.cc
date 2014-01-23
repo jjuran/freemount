@@ -193,7 +193,7 @@ static void send_stat_request( const char* path )
 
 int main( int argc, char** argv )
 {
-	if ( argc <= 1  &&  argv[1][0] != '\0' )
+	if ( argc <= 1  ||  argv[1][0] == '\0' )
 	{
 		return 0;
 	}
