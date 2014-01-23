@@ -35,7 +35,7 @@ static int protocol_in  = -1;
 static int protocol_out = -1;
 
 
-static const char* the_path;
+static const char* the_path = "/";
 
 
 static uint32_t u32_from_fragment( const fragment_header& fragment )
@@ -106,12 +106,10 @@ static void send_list_request( const char* path )
 
 int main( int argc, char** argv )
 {
-	if ( argc <= 1  &&  argv[1][0] != '\0' )
+	if ( argc > 1  &&  argv[1][0] != '\0' )
 	{
-		return 0;
+		the_path = argv[1];
 	}
-	
-	the_path = argv[1];
 	
 	const char* connector = getenv( "FREEMOUNT_CONNECT" );
 	

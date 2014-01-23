@@ -45,7 +45,7 @@ static int protocol_in  = -1;
 static int protocol_out = -1;
 
 
-static plus::string the_path;
+static plus::string the_path = "/";
 
 
 struct stat_response
@@ -370,12 +370,10 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 
 int main( int argc, char** argv )
 {
-	if ( argc <= 1  &&  argv[1][0] != '\0' )
+	if ( argc > 1  &&  argv[1][0] != '\0' )
 	{
-		return 0;
+		the_path.assign( argv[1], strlen( argv[1] ), plus::delete_never );
 	}
-	
-	the_path.assign( argv[1], strlen( argv[1] ), plus::delete_never );
 	
 	const char* connector = getenv( "FREEMOUNT_CONNECT" );
 	
