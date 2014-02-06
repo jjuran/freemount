@@ -425,6 +425,17 @@ static char** get_options( char** argv )
 			
 			const char* opt = arg + 1;
 			
+			if ( opt[0] == 'q' )
+			{
+				int dev_null = open( "/dev/null", O_WRONLY );
+				
+				dup2( dev_null, STDERR_FILENO );
+				
+				close( dev_null );
+				
+				continue;
+			}
+			
 			return BAD_USAGE( "Unknown option", arg );
 		}
 		
