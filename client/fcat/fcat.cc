@@ -22,6 +22,9 @@
 #include "freemount/send.hh"
 #include "freemount/write_in_full.hh"
 
+// freemount-client
+#include "freemount/client.hh"
+
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
