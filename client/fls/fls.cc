@@ -370,11 +370,6 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 
 int main( int argc, char** argv )
 {
-	if ( argc > 1  &&  argv[1][0] != '\0' )
-	{
-		the_path.assign( argv[1], strlen( argv[1] ), plus::delete_never );
-	}
-	
 	const char* connector = getenv( "FREEMOUNT_CONNECT" );
 	
 	if ( connector == NULL )
@@ -393,6 +388,13 @@ int main( int argc, char** argv )
 	
 	protocol_in  = the_connection.get_input ();
 	protocol_out = the_connection.get_output();
+	
+	if ( argc > 1  &&  argv[1][0] != '\0' )
+	{
+		const char* path = argv[ 1 ];
+		
+		the_path.assign( path, strlen( path ), plus::delete_never );
+	}
 	
 	send_stat_request( the_path, 0 );
 	
