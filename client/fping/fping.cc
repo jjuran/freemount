@@ -93,8 +93,6 @@ static void get_options( int argc, char** argv )
 		return;
 	}
 	
-	bool saw_dash = false;
-	
 	while ( const char* arg = *++argv )
 	{
 		if ( arg[0] == '-' )
@@ -103,8 +101,6 @@ static void get_options( int argc, char** argv )
 			{
 				if ( arg[2] == '\0' )
 				{
-					saw_dash = true;
-					
 					continue;
 				}
 				
