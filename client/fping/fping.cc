@@ -20,6 +20,9 @@
 #include "freemount/receiver.hh"
 #include "freemount/send.hh"
 
+// freemount-client
+#include "freemount/client.hh"
+
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
@@ -171,19 +174,16 @@ int main( int argc, char** argv )
 	
 	const int n_params = argc - (params - argv);
 	
-	const char* connector = getenv( "FREEMOUNT_CONNECT" );
+	char* address = params[ 0 ];  // may be NULL
 	
-	if ( connector == NULL )
+	const char** connector_argv = parse_address( address );
+	
+	if ( connector_argv == NULL )
 	{
-		connector = getenv( "UNET_CONNECT" );
+		BAD_USAGE( "Malformed address", address );
+		
+		return 2;
 	}
-	
-	if ( connector == NULL )
-	{
-		connector = "uloop";
-	}
-	
-	const char* connector_argv[] = { "/bin/sh", "-c", connector, NULL };
 	
 	the_connection = unet::connect( connector_argv );
 	
