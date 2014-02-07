@@ -19,6 +19,8 @@ namespace freemount
 	
 	static const char* utcp_argv[] = { NULL, "utcp", NULL, "4564", NULL };
 	
+	static const char* ussh_argv[] = { NULL, "ussh", "--", NULL, "bin/freemountd", "-q", "--root", ".", NULL };
+	
 	
 	static const char** parse_mnt_hostpath( char* hostpath )
 	{
@@ -44,6 +46,25 @@ namespace freemount
 		}
 		
 		return utcp_argv + 1;
+	}
+	
+	static const char** parse_ssh_path( char* path )
+	{
+		if ( path[ 0 ] != '\0' )
+		{
+			ussh_argv[ 7 ] = path;
+			
+			char* slashes = strstr( path, "//" );
+			
+			if ( slashes != NULL )
+			{
+				*slashes++ = '\0';
+				
+				ussh_argv[ 0 ] = slashes;
+			}
+		}
+		
+		return ussh_argv + 1;
 	}
 	
 	const char** parse_address( char* address )
@@ -90,9 +111,13 @@ namespace freemount
 			return NULL;
 		}
 		
-		// foo:bar syntax not supported
+		// "sshhost:path" -> ussh
 		
-		return NULL;
+		*colon = '\0';
+		
+		ussh_argv[ 3 ] = address;  // "sshhost"
+		
+		return parse_ssh_path( p );
 	}
 	
 }
