@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 
 // Standard C
 #include <stdlib.h>
@@ -19,8 +20,13 @@
 #include "freemount/receiver.hh"
 #include "freemount/send.hh"
 
+// freemount-client
+#include "freemount/client.hh"
+
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
+
+#define ARRAYLEN( array )  (sizeof array / sizeof array[0])
 
 
 using namespace freemount;
@@ -86,30 +92,55 @@ static void* pinger_start( void* arg )
 	return NULL;
 }
 
-static void get_options( int argc, char** argv )
+static void bad_usage( const char* text, size_t text_size, const char* arg )
+{
+	const iovec iov[] =
+	{
+		{ (void*) text, text_size    },
+		{ (void*) arg, strlen( arg ) },
+		{ (void*) STR_LEN( "\n" )    },
+	};
+	
+	writev( STDERR_FILENO, iov, ARRAYLEN( iov ) );
+}
+
+#define BAD_USAGE( text, arg )  (bad_usage( STR_LEN( text ": " ), arg ), (char**) NULL)
+
+static char** get_options( int argc, char** argv )
 {
 	if ( *argv == NULL )
 	{
-		return;
+		return argv;
 	}
-	
-	bool saw_dash = false;
 	
 	while ( const char* arg = *++argv )
 	{
 		if ( arg[0] == '-' )
 		{
+			if ( arg[1] == '\0' )
+			{
+				// An "-" argument is not an option and means /dev/fd/0
+				break;
+			}
+			
 			if ( arg[1] == '-' )
 			{
-				if ( arg[2] == '\0' )
+				// long option or "--"
+				
+				const char* option = arg + 2;
+				
+				if ( *option == '\0' )
 				{
-					saw_dash = true;
-					
-					continue;
+					++argv;
+					break;
 				}
 				
-				exit( 2 );  // no long options
+				// no long options
+				
+				return BAD_USAGE( "Unknown option", arg );
 			}
+			
+			// short option
 			
 			switch ( arg[1] )
 			{
@@ -119,33 +150,40 @@ static void get_options( int argc, char** argv )
 				
 				case '\0':  // "-" argument not recognized
 				default:
-					exit( 2 );  // undefined option
+					return BAD_USAGE( "Unknown option", arg );
 			}
+			
+			continue;
 		}
-		else
-		{
-			exit( 2 );  // non-option arguments not recognized
-		}
+		
+		// not an option
+		break;
 	}
+	
+	return argv;
 }
 
 int main( int argc, char** argv )
 {
-	get_options( argc, argv );
+	char** params = get_options( argc, argv );
 	
-	const char* connector = getenv( "FREEMOUNT_CONNECT" );
-	
-	if ( connector == NULL )
+	if ( params == NULL )
 	{
-		connector = getenv( "UNET_CONNECT" );
+		return 2;
 	}
 	
-	if ( connector == NULL )
-	{
-		connector = "uloop";
-	}
+	const int n_params = argc - (params - argv);
 	
-	const char* connector_argv[] = { "/bin/sh", "-c", connector, NULL };
+	char* address = params[ 0 ];  // may be NULL
+	
+	const char** connector_argv = parse_address( address );
+	
+	if ( connector_argv == NULL )
+	{
+		BAD_USAGE( "Malformed address", address );
+		
+		return 2;
+	}
 	
 	the_connection = unet::connect( connector_argv );
 	
