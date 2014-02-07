@@ -32,6 +32,9 @@
 #include "freemount/send.hh"
 #include "freemount/write_in_full.hh"
 
+// freemount-client
+#include "freemount/client.hh"
+
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
@@ -370,29 +373,29 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 
 int main( int argc, char** argv )
 {
-	const char* connector = getenv( "FREEMOUNT_CONNECT" );
-	
-	if ( connector == NULL )
+	if ( argc <= 1  ||  argv[1][0] == '\0' )
 	{
-		connector = getenv( "UNET_CONNECT" );
+		return 0;
 	}
 	
-	if ( connector == NULL )
-	{
-		connector = "unet-connect";
-	}
+	char* address = argv[ 1 ];
 	
-	const char* connector_argv[] = { "/bin/sh", "-c", connector, NULL };
+	const char** connector_argv = parse_address( address );
+	
+	if ( connector_argv == NULL )
+	{
+		return 2;
+	}
 	
 	the_connection = unet::connect( connector_argv );
 	
 	protocol_in  = the_connection.get_input ();
 	protocol_out = the_connection.get_output();
 	
-	if ( argc > 1  &&  argv[1][0] != '\0' )
+	const char* path = connector_argv[ -1 ];
+	
+	if ( path != NULL )
 	{
-		const char* path = argv[ 1 ];
-		
 		the_path.assign( path, strlen( path ), plus::delete_never );
 	}
 	
