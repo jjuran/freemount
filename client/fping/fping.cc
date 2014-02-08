@@ -11,6 +11,7 @@
 
 // Standard C
 #include <stdlib.h>
+#include <string.h>
 
 // unet-connect
 #include "unet/connect.hh"
