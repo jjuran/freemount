@@ -29,7 +29,7 @@ namespace freemount
 		public:
 			data_receiver( fragment_handler_function handler, void* context );
 			
-			void recv_bytes( const char* buffer, std::size_t n );
+			int recv_bytes( const char* buffer, std::size_t n );
 	};
 	
 }
