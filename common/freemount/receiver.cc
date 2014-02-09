@@ -49,7 +49,12 @@ namespace freemount
 				break;
 			}
 			
-			its_handler( its_context, h );
+			const int status = its_handler( its_context, h );
+			
+			if ( status != 0 )
+			{
+				return;
+			}
 			
 			data_size -= fragment_size;
 			p         += fragment_size;
