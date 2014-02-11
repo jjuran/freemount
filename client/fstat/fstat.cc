@@ -55,7 +55,7 @@ static uint32_t u32_from_fragment( const fragment_header& fragment )
 	return iota::u32_from_big( *(uint32_t*) (&fragment + 1) );
 }
 
-static uint32_t u64_from_fragment( const fragment_header& fragment )
+static uint64_t u64_from_fragment( const fragment_header& fragment )
 {
 	if ( fragment.big_size != iota::big_u16( sizeof (uint64_t) ) )
 	{
