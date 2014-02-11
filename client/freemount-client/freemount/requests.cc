@@ -5,27 +5,67 @@
 
 #include "freemount/requests.hh"
 
-// freemount
-#include "freemount/send.hh"
-#include "freemount/write_in_full.hh"
+// POSIX
+#include <sys/uio.h>
+
+// iota
+#include "iota/endian.hh"
+
+// poseven
+#include "poseven/types/errno_t.hh"
+
+
+#define ARRAYLEN( a )  (sizeof (a) / sizeof (a)[0])
+
+#define ARRAY_LEN( a )  a, ARRAYLEN( a )
 
 
 namespace freemount
 {
 	
+	namespace p7 = poseven;
+	
+	
 	void send_path_request( int fd, const char* path, uint32_t size, uint8_t r_type, uint8_t r_id )
 	{
-		fragment_header header = { 0 };
+		fragment_header req_and_path[ 2 ] = { { 0 }, { 0 } };
 		
-		header.r_id = r_id;
-		header.type = frag_req;
-		header.data = r_type;
+		fragment_header eom = { 0 };
 		
-		write_in_full( fd, &header, sizeof header );
+		req_and_path[ 0 ].r_id = r_id;
+		req_and_path[ 0 ].type = frag_req;
+		req_and_path[ 0 ].data = r_type;
 		
-		send_string_fragment( fd, frag_file_path, path, size, r_id );
+		req_and_path[ 1 ].big_size = iota::big_u16( size );
+		req_and_path[ 1 ].r_id = r_id;
+		req_and_path[ 1 ].type = frag_file_path;
 		
-		send_empty_fragment( fd, frag_eom, r_id );
+		const void* zeroes = &eom;
+		
+		const int pad_length = 3 - (size + 3 & 0x3);
+		
+		eom.r_id = r_id;
+		eom.type = frag_eom;
+		
+		struct iovec iov[] =
+		{
+			{ (void*) req_and_path, sizeof req_and_path },
+			{ (void*) path,         size                },
+			{ (void*) zeroes,       pad_length          },
+			{ (void*) &eom,         sizeof eom          },
+		};
+		
+		ssize_t n_written = writev( fd, ARRAY_LEN( iov ) );
+		
+		if ( n_written < 0 )
+		{
+			p7::throw_errno( errno );
+		}
+		
+		if ( n_written != 3 * sizeof (fragment_header) + size + pad_length )
+		{
+			p7::throw_errno( EINTR );
+		}
 	}
 	
 }
