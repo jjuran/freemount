@@ -11,9 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// iota
-#include "iota/endian.hh"
-
 // gear
 #include "gear/inscribe_decimal.hh"
 
@@ -44,26 +41,6 @@ static int protocol_out = -1;
 
 static const char* the_path;
 
-
-static uint32_t u32_from_fragment( const fragment_header& fragment )
-{
-	if ( fragment.big_size != iota::big_u16( sizeof (uint32_t) ) )
-	{
-		abort();
-	}
-	
-	return iota::u32_from_big( *(uint32_t*) (&fragment + 1) );
-}
-
-static uint64_t u64_from_fragment( const fragment_header& fragment )
-{
-	if ( fragment.big_size != iota::big_u16( sizeof (uint64_t) ) )
-	{
-		abort();
-	}
-	
-	return iota::u64_from_big( *(uint64_t*) (&fragment + 1) );
-}
 
 static void print_mode( uint32_t mode )
 {
@@ -148,15 +125,15 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 	switch ( fragment.type )
 	{
 		case frag_stat_mode:
-			print_mode( u32_from_fragment( fragment ) );
+			print_mode( get_u32( fragment ) );
 			break;
 		
 		case frag_stat_nlink:
-			print_number( u32_from_fragment( fragment ) );
+			print_number( get_u32( fragment ) );
 			break;
 		
 		case frag_stat_size:
-			print_number( u64_from_fragment( fragment ) );
+			print_number( get_u64( fragment ) );
 			break;
 		
 		case frag_eom:
@@ -167,7 +144,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_err:
-			report_error( u32_from_fragment( fragment ) );
+			report_error( get_u32( fragment ) );
 			exit( 1 );
 			break;
 		

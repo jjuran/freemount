@@ -14,9 +14,6 @@
 // Standard C++
 #include <map>
 
-// iota
-#include "iota/endian.hh"
-
 // gear
 #include "gear/inscribe_decimal.hh"
 
@@ -28,6 +25,7 @@
 
 // freemount
 #include "freemount/event_loop.hh"
+#include "freemount/frame_size.hh"
 #include "freemount/receiver.hh"
 #include "freemount/send.hh"
 #include "freemount/write_in_full.hh"
@@ -222,30 +220,9 @@ static void send_list_request( const plus::string& path, uint8_t r_id )
 	send_empty_fragment( protocol_out, frag_eom );
 }
 
-static uint32_t u32_from_fragment( const fragment_header& fragment )
-{
-	if ( fragment.big_size != iota::big_u16( sizeof (uint32_t) ) )
-	{
-		abort();
-	}
-	
-	return iota::u32_from_big( *(uint32_t*) (&fragment + 1) );
-}
-
-static uint64_t u64_from_fragment( const fragment_header& fragment )
-{
-	if ( fragment.big_size != iota::big_u16( sizeof (uint64_t) ) )
-	{
-		abort();
-	}
-	
-	return iota::u64_from_big( *(uint64_t*) (&fragment + 1) );
-}
-
 static plus::string string_from_fragment( const fragment_header& fragment )
 {
-	plus::string result( (const char*) (&fragment + 1),
-	                     iota::u16_from_big( fragment.big_size ) );
+	plus::string result( (const char*) get_data( fragment ), get_size( fragment ) );
 	
 	return result;
 }
@@ -280,15 +257,15 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 		switch ( fragment.type )
 		{
 			case frag_stat_mode:
-				st.mode = u32_from_fragment( fragment );
+				st.mode = get_u32( fragment );
 				break;
 			
 			case frag_stat_nlink:
-				st.nlink = u32_from_fragment( fragment );
+				st.nlink = get_u32( fragment );
 				break;
 			
 			case frag_stat_size:
-				st.size = u64_from_fragment( fragment );
+				st.size = get_u64( fragment );
 				break;
 			
 			case frag_eom:
@@ -318,7 +295,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 				break;
 			
 			case frag_err:
-				report_error( u32_from_fragment( fragment ) );
+				report_error( get_u32( fragment ) );
 				exit( 1 );
 				break;
 			
@@ -344,7 +321,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			}
 			else
 			{
-				write( STDOUT_FILENO, (const char*) (&fragment + 1), iota::u16_from_big( fragment.big_size ) );
+				write( STDOUT_FILENO, get_data( fragment ), get_size( fragment ) );
 				write( STDOUT_FILENO, STR_LEN( ": skipped\n" ) );
 			}
 			
@@ -358,7 +335,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_err:
-			report_error( u32_from_fragment( fragment ) );
+			report_error( get_u32( fragment ) );
 			exit( 1 );
 			break;
 		
