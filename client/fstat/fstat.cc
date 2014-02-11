@@ -20,11 +20,10 @@
 // freemount
 #include "freemount/event_loop.hh"
 #include "freemount/receiver.hh"
-#include "freemount/send.hh"
-#include "freemount/write_in_full.hh"
 
 // freemount-client
 #include "freemount/client.hh"
+#include "freemount/requests.hh"
 
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
@@ -157,20 +156,6 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 	return 0;
 }
 
-static void send_stat_request( const char* path )
-{
-	fragment_header header = { 0 };
-	
-	header.type = frag_req;
-	header.data = req_stat;
-	
-	write_in_full( protocol_out, &header, sizeof header );
-	
-	send_string_fragment( protocol_out, frag_file_path, path, strlen( path ) );
-	
-	send_empty_fragment( protocol_out, frag_eom );
-}
-
 int main( int argc, char** argv )
 {
 	if ( argc <= 1  ||  argv[1][0] == '\0' )
@@ -199,7 +184,7 @@ int main( int argc, char** argv )
 		the_path = "/";
 	}
 	
-	send_stat_request( the_path );
+	send_stat_request( protocol_out, the_path, strlen( the_path ) );
 	
 	data_receiver r( &fragment_handler, NULL );
 	
