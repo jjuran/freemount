@@ -16,9 +16,6 @@
 // Standard C++
 #include <map>
 
-// iota
-#include "iota/endian.hh"
-
 // poseven
 #include "poseven/types/errno_t.hh"
 
@@ -38,6 +35,7 @@
 
 // freemount
 #include "freemount/event_loop.hh"
+#include "freemount/frame_size.hh"
 #include "freemount/receiver.hh"
 #include "freemount/send.hh"
 
@@ -276,7 +274,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 					abort();
 			}
 			
-			r.file_path.assign( (const char*) (&fragment + 1), iota::u16_from_big( fragment.big_size ) );
+			r.file_path.assign( (const char*) get_data( fragment ), get_size( fragment ) );
 			break;
 		
 		case frag_eom:
