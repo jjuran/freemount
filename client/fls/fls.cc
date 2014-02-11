@@ -27,11 +27,10 @@
 #include "freemount/event_loop.hh"
 #include "freemount/frame_size.hh"
 #include "freemount/receiver.hh"
-#include "freemount/send.hh"
-#include "freemount/write_in_full.hh"
 
 // freemount-client
 #include "freemount/client.hh"
+#include "freemount/requests.hh"
 
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
@@ -192,32 +191,12 @@ static void send_stat_request( const plus::string& path, uint8_t r_id )
 	st.nlink = 1;
 	st.size = 0;
 	
-	fragment_header header = { 0 };
-	
-	header.r_id = r_id;
-	header.type = frag_req;
-	header.data = req_stat;
-	
-	write_in_full( protocol_out, &header, sizeof header );
-	
-	send_string_fragment( protocol_out, frag_file_path, path.data(), path.size(), r_id );
-	
-	send_empty_fragment( protocol_out, frag_eom, r_id );
+	send_stat_request( protocol_out, path.data(), path.size(), r_id );
 }
 
 static void send_list_request( const plus::string& path, uint8_t r_id )
 {
-	fragment_header header = { 0 };
-	
-	header.r_id = r_id;
-	header.type = frag_req;
-	header.data = req_list;
-	
-	write_in_full( protocol_out, &header, sizeof header );
-	
-	send_string_fragment( protocol_out, frag_file_path, path.data(), path.size(), r_id );
-	
-	send_empty_fragment( protocol_out, frag_eom );
+	send_list_request( protocol_out, path.data(), path.size(), r_id );
 }
 
 static plus::string string_from_fragment( const fragment_header& fragment )
