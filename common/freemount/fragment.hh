@@ -27,6 +27,16 @@ namespace freemount
 	
 	#define FREEMOUNT_FRAGMENT_HEADER_INITIALIZER  { 0, 0, 0,  0, 0, 0, 0 }
 	
+	
+	inline const void* get_data( const fragment_header& frame )
+	{
+		return &frame + 1;
+	}
+	
+	uint32_t get_u32( const fragment_header& frame );
+	uint64_t get_u64( const fragment_header& frame );
+	
+	
 	enum fragment_type
 	{
 		frag_ping = 1,
