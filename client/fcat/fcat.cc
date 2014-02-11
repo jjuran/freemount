@@ -10,14 +10,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-// iota
-#include "iota/endian.hh"
-
 // unet-connect
 #include "unet/connect.hh"
 
 // freemount
 #include "freemount/event_loop.hh"
+#include "freemount/frame_size.hh"
 #include "freemount/receiver.hh"
 #include "freemount/send.hh"
 #include "freemount/write_in_full.hh"
@@ -41,16 +39,6 @@ static int protocol_out = -1;
 static const char* the_path;
 
 
-static uint32_t u32_from_fragment( const fragment_header& fragment )
-{
-	if ( fragment.big_size != iota::big_u16( sizeof (uint32_t) ) )
-	{
-		abort();
-	}
-	
-	return iota::u32_from_big( *(uint32_t*) (&fragment + 1) );
-}
-
 static void report_error( uint32_t err )
 {
 	write( STDERR_FILENO, STR_LEN( "fcat: " ) );
@@ -71,7 +59,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 	switch ( fragment.type )
 	{
 		case frag_io_data:
-			write( STDOUT_FILENO, (const char*) (&fragment + 1), iota::u16_from_big( fragment.big_size ) );
+			write( STDOUT_FILENO, get_data( fragment ), get_size( fragment ) );
 			break;
 		
 		case frag_io_eof:
@@ -82,7 +70,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_err:
-			report_error( u32_from_fragment( fragment ) );
+			report_error( get_u32( fragment ) );
 			exit( 1 );
 			break;
 		
