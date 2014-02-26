@@ -26,7 +26,6 @@
 #include "vfs/node.hh"
 #include "vfs/filehandle/primitives/pread.hh"
 #include "vfs/functions/resolve_pathname.hh"
-#include "vfs/functions/root.hh"
 #include "vfs/node/types/posix.hh"
 #include "vfs/primitives/listdir.hh"
 #include "vfs/primitives/open.hh"
@@ -48,14 +47,14 @@ using namespace freemount;
 static const char* the_native_root_directory = "/var/freemount";
 
 
-namespace vfs
+namespace
 {
 	
-	const node* root()
+	const vfs::node& root()
 	{
-		static node_ptr root = vfs::new_posix_root( the_native_root_directory );
+		static vfs::node_ptr root = vfs::new_posix_root( the_native_root_directory );
 		
-		return root.get();
+		return *root;
 	}
 	
 }
@@ -78,7 +77,7 @@ static int stat( uint8_t r_id, const request& r )
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( path, *vfs::root() );
+		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
 		
 		stat( *that, sb );
 	}
@@ -112,7 +111,7 @@ static int list( uint8_t r_id, const request& r )
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( path, *vfs::root() );
+		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
 		
 		listdir( *that, contents );
 	}
@@ -141,7 +140,7 @@ static int read( uint8_t r_id, const request& r )
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( path, *vfs::root() );
+		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
 		
 		file = open( *that, O_RDONLY, 0 );
 	}
