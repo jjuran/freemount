@@ -47,7 +47,7 @@ static int stat( session& s, uint8_t r_id, const request& r )
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
 		
 		stat( *that, sb );
 	}
@@ -81,7 +81,7 @@ static int list( session& s, uint8_t r_id, const request& r )
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
 		
 		listdir( *that, contents );
 	}
@@ -110,7 +110,7 @@ static int read( session& s, uint8_t r_id, const request& r )
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
 		
 		file = open( *that, O_RDONLY, 0 );
 	}
