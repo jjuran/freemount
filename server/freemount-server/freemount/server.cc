@@ -32,20 +32,13 @@
 
 // freemount
 #include "freemount/frame_size.hh"
+#include "freemount/request.hh"
 #include "freemount/send.hh"
 
 
 namespace freemount {
 
 namespace p7 = poseven;
-
-
-struct request
-{
-	plus::string path;
-	
-	request_type type;
-};
 
 
 static std::map< uint8_t, request > the_requests;
