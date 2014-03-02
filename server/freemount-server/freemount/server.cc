@@ -28,6 +28,7 @@
 #include "vfs/filehandle/primitives/read.hh"
 #include "vfs/filehandle/primitives/write.hh"
 #include "vfs/functions/resolve_pathname.hh"
+#include "vfs/primitives/hardlink.hh"
 #include "vfs/primitives/listdir.hh"
 #include "vfs/primitives/open.hh"
 #include "vfs/primitives/stat.hh"
@@ -272,6 +273,27 @@ int write( session& s, uint8_t r_id, const request& r )
 }
 
 static
+int link( session& s, uint8_t r_id, const request& r )
+{
+	const plus::string& path_1 = r.path;
+	const plus::string& path_2 = r.data;
+	
+	try
+	{
+		vfs::node_ptr that_1 = vfs::resolve_pathname( s.root(), path_1, s.cwd() );
+		vfs::node_ptr that_2 = vfs::resolve_pathname( s.root(), path_2, s.cwd() );
+		
+		hardlink( *that_1, *that_2 );
+	}
+	catch ( const p7::errno_t& err )
+	{
+		return -err;
+	}
+	
+	return 0;
+}
+
+static
 int start_read( session& s, uint8_t r_id, const request& r )
 {
 	begin_task( &read, s, r_id );
@@ -360,6 +382,10 @@ int frame_handler( void* that, const frame_header& frame )
 				write( STDERR_FILENO, STR_LEN( "open..." ) );
 				break;
 			
+			case req_link:
+				write( STDERR_FILENO, STR_LEN( "link..." ) );
+				break;
+			
 			default:
 				abort();
 		}
@@ -397,13 +423,14 @@ int frame_handler( void* that, const frame_header& frame )
 				case req_read:
 				case req_write:
 				case req_open:
+				case req_link:
 					break;
 				
 				default:
 					abort();
 			}
 			
-			r.path.assign( data, get_size( frame ) );
+			(r.path.empty() ? r.path : r.data).assign( data, get_size( frame ) );
 			break;
 		
 		case Frame_arg_fd:
@@ -455,6 +482,10 @@ int frame_handler( void* that, const frame_header& frame )
 				
 				case req_open:
 					err = open( s, request_id, r );
+					break;
+				
+				case req_link:
+					err = link( s, request_id, r );
 					break;
 				
 				default:
