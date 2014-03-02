@@ -30,16 +30,11 @@ using namespace freemount;
 static const char* the_native_root_directory = "/var/freemount";
 
 
-namespace freemount
+static const vfs::node& root()
 {
+	static vfs::node_ptr root = vfs::new_posix_root( the_native_root_directory );
 	
-	const vfs::node& root()
-	{
-		static vfs::node_ptr root = vfs::new_posix_root( the_native_root_directory );
-		
-		return *root;
-	}
-	
+	return *root;
 }
 
 
