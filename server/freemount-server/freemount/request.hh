@@ -21,7 +21,13 @@ namespace freemount
 		plus::string path;
 		
 		request_type type;
+		
+		request( request_type type = req_none );
 	};
+	
+	inline request::request( request_type type ) : type( type )
+	{
+	}
 	
 }
 
