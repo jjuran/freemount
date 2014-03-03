@@ -42,9 +42,9 @@ namespace p7 = poseven;
 
 struct request
 {
-	request_type type;
+	plus::string path;
 	
-	plus::string file_path;
+	request_type type;
 };
 
 
@@ -53,7 +53,7 @@ static std::map< uint8_t, request > the_requests;
 
 static int stat( uint8_t r_id, const request& r )
 {
-	const char* path = r.file_path.c_str();
+	const char* path = r.path.c_str();
 	
 	struct stat sb;
 	
@@ -87,7 +87,7 @@ static int stat( uint8_t r_id, const request& r )
 
 static int list( uint8_t r_id, const request& r )
 {
-	const char* path = r.file_path.c_str();
+	const char* path = r.path.c_str();
 	
 	vfs::dir_contents contents;
 	
@@ -116,7 +116,7 @@ static int list( uint8_t r_id, const request& r )
 
 static int read( uint8_t r_id, const request& r )
 {
-	const char* path = r.file_path.c_str();
+	const char* path = r.path.c_str();
 	
 	vfs::filehandle_ptr file;
 	
@@ -255,7 +255,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 					abort();
 			}
 			
-			r.file_path.assign( (const char*) get_data( fragment ), get_size( fragment ) );
+			r.path.assign( (const char*) get_data( fragment ), get_size( fragment ) );
 			break;
 		
 		case frag_eom:
