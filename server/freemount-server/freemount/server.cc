@@ -58,16 +58,16 @@ static int stat( session& s, uint8_t r_id, const request& r )
 	
 	const mode_t mode = sb.st_mode;
 	
-	send_u32_fragment( STDOUT_FILENO, frag_stat_mode, mode, r_id );
+	send_u32_fragment( s.send_fd, frag_stat_mode, mode, r_id );
 	
 	if ( S_ISDIR( mode )  &&  sb.st_nlink > 1 )
 	{
-		send_u32_fragment( STDOUT_FILENO, frag_stat_nlink, sb.st_nlink, r_id );
+		send_u32_fragment( s.send_fd, frag_stat_nlink, sb.st_nlink, r_id );
 	}
 	
 	if ( S_ISREG( mode ) )
 	{
-		send_u64_fragment( STDOUT_FILENO, frag_stat_size, sb.st_size, r_id );
+		send_u64_fragment( s.send_fd, frag_stat_size, sb.st_size, r_id );
 	}
 	
 	return 0;
@@ -96,7 +96,7 @@ static int list( session& s, uint8_t r_id, const request& r )
 		
 		const plus::string& name = entry.name;
 		
-		send_string_fragment( STDOUT_FILENO, frag_dentry_name, name.data(), name.size(), r_id );
+		send_string_fragment( s.send_fd, frag_dentry_name, name.data(), name.size(), r_id );
 	}
 	
 	return 0;
@@ -141,12 +141,12 @@ static int read( session& s, uint8_t r_id, const request& r )
 			break;
 		}
 		
-		send_string_fragment( STDOUT_FILENO, frag_io_data, buffer, n_read, r_id );
+		send_string_fragment( s.send_fd, frag_io_data, buffer, n_read, r_id );
 		
 		position += n_read;
 	}
 	
-	send_empty_fragment( STDOUT_FILENO, frag_io_eof, r_id );
+	send_empty_fragment( s.send_fd, frag_io_eof, r_id );
 	
 	return 0;
 }
@@ -175,7 +175,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 	{
 		write( STDERR_FILENO, "ping\n", 5 );
 		
-		send_empty_fragment( STDOUT_FILENO, frag_pong );
+		send_empty_fragment( s.send_fd, frag_pong );
 		
 		return 0;
 	}
@@ -274,7 +274,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 			
 			s.set_request( request_id, NULL );
 			
-			send_response( STDOUT_FILENO, err, request_id );
+			send_response( s.send_fd, err, request_id );
 			break;
 		
 		default:
