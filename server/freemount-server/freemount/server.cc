@@ -163,19 +163,19 @@ static int read( uint8_t r_id, const request& r )
 	return 0;
 }
 
-static void send_response( int result, uint8_t r_id )
+static void send_response( int fd, int result, uint8_t r_id )
 {
 	if ( result >= 0 )
 	{
 		write( STDERR_FILENO, " ok\n", 4 );
 		
-		send_empty_fragment( STDOUT_FILENO, frag_eom, r_id );
+		send_empty_fragment( fd, frag_eom, r_id );
 	}
 	else
 	{
 		write( STDERR_FILENO, " err\n", 5 );
 		
-		send_u32_fragment( STDOUT_FILENO, frag_err, -result, r_id );
+		send_u32_fragment( fd, frag_err, -result, r_id );
 	}
 }
 
@@ -286,7 +286,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 			
 			the_requests.erase( request_id );
 			
-			send_response( err, request_id );
+			send_response( STDOUT_FILENO, err, request_id );
 			break;
 		
 		default:
