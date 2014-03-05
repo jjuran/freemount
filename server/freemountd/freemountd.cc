@@ -21,6 +21,7 @@
 
 // freemountd
 #include "freemount/server.hh"
+#include "freemount/session.hh"
 
 
 using namespace freemount;
@@ -181,7 +182,9 @@ int main( int argc, char** argv )
 	
 	int n_params = argc - (params - argv);
 	
-	data_receiver r( &fragment_handler, NULL );
+	session s( STDOUT_FILENO, root(), root() );
+	
+	data_receiver r( &fragment_handler, &s );
 	
 	int looped = run_event_loop( r, STDIN_FILENO );
 	
