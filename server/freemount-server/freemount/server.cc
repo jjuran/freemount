@@ -13,9 +13,6 @@
 // Standard C
 #include <stdlib.h>
 
-// Standard C++
-#include <map>
-
 // poseven
 #include "poseven/types/errno_t.hh"
 
@@ -32,6 +29,8 @@
 
 // freemount
 #include "freemount/frame_size.hh"
+#include "freemount/request.hh"
+#include "freemount/session.hh"
 #include "freemount/send.hh"
 
 
@@ -40,26 +39,15 @@ namespace freemount {
 namespace p7 = poseven;
 
 
-struct request
+static int stat( session& s, uint8_t r_id, const request& r )
 {
-	request_type type;
-	
-	plus::string file_path;
-};
-
-
-static std::map< uint8_t, request > the_requests;
-
-
-static int stat( uint8_t r_id, const request& r )
-{
-	const char* path = r.file_path.c_str();
+	const char* path = r.path.c_str();
 	
 	struct stat sb;
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
 		
 		stat( *that, sb );
 	}
@@ -70,30 +58,30 @@ static int stat( uint8_t r_id, const request& r )
 	
 	const mode_t mode = sb.st_mode;
 	
-	send_u32_fragment( STDOUT_FILENO, frag_stat_mode, mode, r_id );
+	send_u32_fragment( s.send_fd, frag_stat_mode, mode, r_id );
 	
 	if ( S_ISDIR( mode )  &&  sb.st_nlink > 1 )
 	{
-		send_u32_fragment( STDOUT_FILENO, frag_stat_nlink, sb.st_nlink, r_id );
+		send_u32_fragment( s.send_fd, frag_stat_nlink, sb.st_nlink, r_id );
 	}
 	
 	if ( S_ISREG( mode ) )
 	{
-		send_u64_fragment( STDOUT_FILENO, frag_stat_size, sb.st_size, r_id );
+		send_u64_fragment( s.send_fd, frag_stat_size, sb.st_size, r_id );
 	}
 	
 	return 0;
 }
 
-static int list( uint8_t r_id, const request& r )
+static int list( session& s, uint8_t r_id, const request& r )
 {
-	const char* path = r.file_path.c_str();
+	const char* path = r.path.c_str();
 	
 	vfs::dir_contents contents;
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
 		
 		listdir( *that, contents );
 	}
@@ -108,21 +96,21 @@ static int list( uint8_t r_id, const request& r )
 		
 		const plus::string& name = entry.name;
 		
-		send_string_fragment( STDOUT_FILENO, frag_dentry_name, name.data(), name.size(), r_id );
+		send_string_fragment( s.send_fd, frag_dentry_name, name.data(), name.size(), r_id );
 	}
 	
 	return 0;
 }
 
-static int read( uint8_t r_id, const request& r )
+static int read( session& s, uint8_t r_id, const request& r )
 {
-	const char* path = r.file_path.c_str();
+	const char* path = r.path.c_str();
 	
 	vfs::filehandle_ptr file;
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( root(), path, root() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
 		
 		file = open( *that, O_RDONLY, 0 );
 	}
@@ -153,12 +141,12 @@ static int read( uint8_t r_id, const request& r )
 			break;
 		}
 		
-		send_string_fragment( STDOUT_FILENO, frag_io_data, buffer, n_read, r_id );
+		send_string_fragment( s.send_fd, frag_io_data, buffer, n_read, r_id );
 		
 		position += n_read;
 	}
 	
-	send_empty_fragment( STDOUT_FILENO, frag_io_eof, r_id );
+	send_empty_fragment( s.send_fd, frag_io_eof, r_id );
 	
 	return 0;
 }
@@ -181,20 +169,20 @@ static void send_response( int fd, int result, uint8_t r_id )
 
 int fragment_handler( void* that, const fragment_header& fragment )
 {
+	session& s = *(session*) that;
+	
 	if ( fragment.type == frag_ping )
 	{
 		write( STDERR_FILENO, "ping\n", 5 );
 		
-		send_empty_fragment( STDOUT_FILENO, frag_pong );
+		send_empty_fragment( s.send_fd, frag_pong );
 		
 		return 0;
 	}
 	
 	const uint8_t request_id = fragment.r_id;
 	
-	typedef std::map< uint8_t, request >::iterator Iter;
-	
-	const Iter it = the_requests.find( request_id );
+	request* req = s.get_request( request_id );
 	
 	if ( fragment.type == frag_req )
 	{
@@ -220,26 +208,26 @@ int fragment_handler( void* that, const fragment_header& fragment )
 				abort();
 		}
 		
-		if ( it != the_requests.end() )
+		if ( req != NULL )
 		{
 			write( STDERR_FILENO, "DUP\n", 4 );
 			
 			abort();
 		}
 		
-		the_requests[ request_id ].type = request_type( fragment.data );
+		s.set_request( request_id, new request( request_type( fragment.data ) ) );
 		
 		return 0;
 	}
 	
-	if ( it == the_requests.end() )
+	if ( req == NULL )
 	{
 		write( STDERR_FILENO, "BAD id\n", 7 );
 		
 		abort();
 	}
 	
-	request& r = it->second;
+	request& r = *req;
 	
 	switch ( fragment.type )
 	{
@@ -255,7 +243,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 					abort();
 			}
 			
-			r.file_path.assign( (const char*) get_data( fragment ), get_size( fragment ) );
+			r.path.assign( (const char*) get_data( fragment ), get_size( fragment ) );
 			break;
 		
 		case frag_eom:
@@ -269,24 +257,24 @@ int fragment_handler( void* that, const fragment_header& fragment )
 					break;
 				
 				case req_stat:
-					err = stat( request_id, r );
+					err = stat( s, request_id, r );
 					break;
 				
 				case req_list:
-					err = list( request_id, r );
+					err = list( s, request_id, r );
 					break;
 				
 				case req_read:
-					err = read( request_id, r );
+					err = read( s, request_id, r );
 					break;
 				
 				default:
 					abort();
 			}
 			
-			the_requests.erase( request_id );
+			s.set_request( request_id, NULL );
 			
-			send_response( STDOUT_FILENO, err, request_id );
+			send_response( s.send_fd, err, request_id );
 			break;
 		
 		default:

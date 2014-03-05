@@ -13,8 +13,6 @@
 namespace freemount
 {
 	
-	const vfs::node& root();
-	
 	struct fragment_header;
 	
 	int fragment_handler( void* that, const fragment_header& fragment );

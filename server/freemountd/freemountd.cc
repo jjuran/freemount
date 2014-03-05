@@ -21,6 +21,7 @@
 
 // freemountd
 #include "freemount/server.hh"
+#include "freemount/session.hh"
 
 
 using namespace freemount;
@@ -29,16 +30,11 @@ using namespace freemount;
 static const char* the_native_root_directory = "/var/freemount";
 
 
-namespace freemount
+static const vfs::node& root()
 {
+	static vfs::node_ptr root = vfs::new_posix_root( the_native_root_directory );
 	
-	const vfs::node& root()
-	{
-		static vfs::node_ptr root = vfs::new_posix_root( the_native_root_directory );
-		
-		return *root;
-	}
-	
+	return *root;
 }
 
 
@@ -181,7 +177,9 @@ int main( int argc, char** argv )
 	
 	int n_params = argc - (params - argv);
 	
-	data_receiver r( &fragment_handler, NULL );
+	session s( STDOUT_FILENO, root(), root() );
+	
+	data_receiver r( &fragment_handler, &s );
 	
 	int looped = run_event_loop( r, STDIN_FILENO );
 	
