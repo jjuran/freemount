@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// more-posix
+#include "more/perror.hh"
+
 // gear
 #include "gear/inscribe_decimal.hh"
 
@@ -106,17 +109,7 @@ static void print_number( uint64_t number )
 
 static void report_error( uint32_t err )
 {
-	write( STDERR_FILENO, STR_LEN( "fstat: " ) );
-	
-	write( STDOUT_FILENO, the_path, strlen( the_path ) );
-	
-	write( STDERR_FILENO, STR_LEN( ": " ) );
-	
-	const char* error = strerror( err );
-	
-	write( STDERR_FILENO, error, strlen( error ) );
-	
-	write( STDERR_FILENO, STR_LEN( "\n" ) );
+	more::perror( "fstat", the_path, err );
 }
 
 static int fragment_handler( void* that, const fragment_header& fragment )
