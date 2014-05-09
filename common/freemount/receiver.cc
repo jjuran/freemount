@@ -26,7 +26,7 @@ namespace freemount
 		return (value + mask) & ~mask;
 	}
 	
-	void data_receiver::recv_bytes( const char* buffer, std::size_t n )
+	int data_receiver::recv_bytes( const char* buffer, std::size_t n )
 	{
 		its_buffer.append( buffer, n );
 		
@@ -49,7 +49,12 @@ namespace freemount
 				break;
 			}
 			
-			its_handler( its_context, h );
+			const int status = its_handler( its_context, h );
+			
+			if ( status != 0 )
+			{
+				return status;
+			}
 			
 			data_size -= fragment_size;
 			p         += fragment_size;
@@ -59,6 +64,8 @@ namespace freemount
 		{
 			its_buffer.assign( p, data_size );
 		}
+		
+		return 0;
 	}
 	
 }

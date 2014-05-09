@@ -28,7 +28,12 @@ namespace freemount
 			
 			if ( n_read > 0 )
 			{
-				r.recv_bytes( buffer, n_read );
+				const int status = r.recv_bytes( buffer, n_read );
+				
+				if ( status != 0 )
+				{
+					return status;
+				}
 			}
 			else if ( n_read == 0 )
 			{
