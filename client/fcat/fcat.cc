@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// more-posix
+#include "more/perror.hh"
+
 // unet-connect
 #include "unet/connect.hh"
 
@@ -40,17 +43,7 @@ static const char* the_path;
 
 static void report_error( uint32_t err )
 {
-	write( STDERR_FILENO, STR_LEN( "fcat: " ) );
-	
-	write( STDERR_FILENO, the_path, strlen( the_path ) );
-	
-	write( STDERR_FILENO, STR_LEN( ": " ) );
-	
-	const char* error = strerror( err );
-	
-	write( STDERR_FILENO, error, strlen( error ) );
-	
-	write( STDERR_FILENO, STR_LEN( "\n" ) );
+	more::perror( "fcat", the_path, err );
 }
 
 static int fragment_handler( void* that, const fragment_header& fragment )
