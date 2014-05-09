@@ -34,6 +34,9 @@
 #include "freemount/send.hh"
 
 
+#define STR_LEN( s )  "" s, (sizeof s - 1)
+
+
 namespace freemount {
 
 namespace p7 = poseven;
@@ -155,13 +158,13 @@ static void send_response( int fd, int result, uint8_t r_id )
 {
 	if ( result >= 0 )
 	{
-		write( STDERR_FILENO, " ok\n", 4 );
+		write( STDERR_FILENO, STR_LEN( " ok\n" ) );
 		
 		send_empty_fragment( fd, frag_eom, r_id );
 	}
 	else
 	{
-		write( STDERR_FILENO, " err\n", 5 );
+		write( STDERR_FILENO, STR_LEN( " err\n" ) );
 		
 		send_u32_fragment( fd, frag_err, -result, r_id );
 	}
@@ -173,7 +176,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 	
 	if ( fragment.type == frag_ping )
 	{
-		write( STDERR_FILENO, "ping\n", 5 );
+		write( STDERR_FILENO, STR_LEN( "ping\n" ) );
 		
 		send_empty_fragment( s.send_fd, frag_pong );
 		
@@ -189,19 +192,19 @@ int fragment_handler( void* that, const fragment_header& fragment )
 		switch ( fragment.data )
 		{
 			case req_auth:
-				write( STDERR_FILENO, "auth...", 7 );
+				write( STDERR_FILENO, STR_LEN( "auth..." ) );
 				break;
 			
 			case req_stat:
-				write( STDERR_FILENO, "stat...", 7 );
+				write( STDERR_FILENO, STR_LEN( "stat..." ) );
 				break;
 			
 			case req_list:
-				write( STDERR_FILENO, "list...", 7 );
+				write( STDERR_FILENO, STR_LEN( "list..." ) );
 				break;
 			
 			case req_read:
-				write( STDERR_FILENO, "read...", 7 );
+				write( STDERR_FILENO, STR_LEN( "read..." ) );
 				break;
 			
 			default:
@@ -210,7 +213,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 		
 		if ( req != NULL )
 		{
-			write( STDERR_FILENO, "DUP\n", 4 );
+			write( STDERR_FILENO, STR_LEN( "DUP\n" ) );
 			
 			abort();
 		}
@@ -222,7 +225,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 	
 	if ( req == NULL )
 	{
-		write( STDERR_FILENO, "BAD id\n", 7 );
+		write( STDERR_FILENO, STR_LEN( "BAD id\n" ) );
 		
 		abort();
 	}
