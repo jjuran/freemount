@@ -74,14 +74,19 @@ namespace freemount
 			return uloop_argv + 1;
 		}
 		
-		char* colon = strchr( address, ':' );
+		char* p = address;
 		
-		if ( colon == NULL )
+		while ( *p != ':' )
 		{
-			return NULL;
+			if ( *p == '\0'  ||  *p == '/' )
+			{
+				return NULL;
+			}
+			
+			++p;
 		}
 		
-		char* p = colon + 1;
+		char* colon = p++;
 		
 		// ":" -> uloop
 		
