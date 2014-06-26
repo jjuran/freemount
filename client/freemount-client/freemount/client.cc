@@ -17,6 +17,8 @@ namespace freemount
 	
 	static const char* uloop_argv[] = { NULL, "uloop", NULL };
 	
+	static const char* ulocal_argv[] = { NULL, "ulocal", NULL, NULL };
+	
 	static const char* utcp_argv[] = { NULL, "utcp", NULL, "4564", NULL };
 	
 	static const char* ussh_argv[] = { NULL, "ussh", "--", NULL, "bin/freemountd", "-q", "--root", ".", NULL };
@@ -80,7 +82,9 @@ namespace freemount
 		{
 			if ( *p == '\0'  ||  *p == '/' )
 			{
-				return NULL;
+				ulocal_argv[ 2 ] = address;  // pathname
+				
+				return ulocal_argv + 1;
 			}
 			
 			++p;
