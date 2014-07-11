@@ -187,7 +187,7 @@ int frame_handler( void* that, const frame_header& frame )
 	
 	request* req = s.get_request( request_id );
 	
-	if ( frame.type == frag_req )
+	if ( frame.type == frag_req  ||  frame.type == Frame_request )
 	{
 		switch ( frame.data )
 		{
@@ -249,6 +249,7 @@ int frame_handler( void* that, const frame_header& frame )
 			r.path.assign( (const char*) get_data( frame ), get_size( frame ) );
 			break;
 		
+		case Frame_submit:
 		case frag_eom:
 			int err;
 			

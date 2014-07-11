@@ -55,6 +55,7 @@ static int frame_handler( void* that, const frame_header& frame )
 		case frag_io_eof:
 			break;
 		
+		case Frame_result:
 		case frag_eom:
 		case frag_err:
 			the_result = get_u32( frame );

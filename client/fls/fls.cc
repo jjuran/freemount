@@ -238,6 +238,7 @@ static int frame_handler( void* that, const frame_header& frame )
 				st.size = get_u64( frame );
 				break;
 			
+			case Frame_result:
 			case frag_eom:
 			case frag_err:
 				if ( int err = get_u32( frame ) )
@@ -302,6 +303,7 @@ static int frame_handler( void* that, const frame_header& frame )
 			
 			break;
 		
+		case Frame_result:
 		case frag_eom:
 		case frag_err:
 			if ( int err = get_u32( frame ) )
