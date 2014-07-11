@@ -44,6 +44,16 @@ namespace freemount
 		Frame_ping = 0xF1,
 		Frame_pong = 0xF0,
 		
+		// message frames (requests)
+		
+		Frame_request = 0,
+		Frame_submit  = 1,
+		
+		// message frames (responses)
+		
+		Frame_result = 64 + 1,
+		
+		
 		frag_req = 3,
 		frag_eom = 4,
 		frag_err = 5,
@@ -66,8 +76,6 @@ namespace freemount
 		frag_create_mode = frag_stat_mode,
 		
 		frag_dentry_name = 32,
-		
-		frag_none = 0
 	};
 	
 	enum request_type
