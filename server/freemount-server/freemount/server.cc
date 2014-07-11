@@ -174,11 +174,11 @@ int frame_handler( void* that, const frame_header& frame )
 {
 	session& s = *(session*) that;
 	
-	if ( frame.type == frag_ping )
+	if ( frame.type == Frame_ping )
 	{
 		write( STDERR_FILENO, STR_LEN( "ping\n" ) );
 		
-		send_empty_frame( s.send_fd, frag_pong );
+		send_empty_frame( s.send_fd, Frame_pong );
 		
 		return 0;
 	}

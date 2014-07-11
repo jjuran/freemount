@@ -48,13 +48,13 @@ static int frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{
-		case frag_ping:
+		case Frame_ping:
 			write( STDERR_FILENO, STR_LEN( "ping\n" ) );
 			
-			send_empty_frame( protocol_out, frag_pong );
+			send_empty_frame( protocol_out, Frame_pong );
 			break;
 		
-		case frag_pong:
+		case Frame_pong:
 			write( STDERR_FILENO, STR_LEN( "pong\n" ) );
 			break;
 		
@@ -78,7 +78,7 @@ static void* pinger_start( void* arg )
 {
 	for ( ;; )
 	{
-		send_empty_frame( protocol_out, frag_ping );
+		send_empty_frame( protocol_out, Frame_ping );
 		
 		if ( count > 0  &&  --count == 0 )
 		{

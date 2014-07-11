@@ -37,7 +37,7 @@ static int client_frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{
-		case frag_pong:
+		case Frame_pong:
 			++n_pongs;
 			break;
 		
@@ -52,8 +52,8 @@ static int server_frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{
-		case frag_ping:
-			send_empty_frame( STDOUT_FILENO, frag_pong );
+		case Frame_ping:
+			send_empty_frame( STDOUT_FILENO, Frame_pong );
 			break;
 		
 		default:
@@ -65,9 +65,9 @@ static int server_frame_handler( void* that, const frame_header& frame )
 
 static int client( int fd )
 {
-	send_empty_frame( fd, frag_ping );
-	send_empty_frame( fd, frag_ping );
-	send_empty_frame( fd, frag_ping );
+	send_empty_frame( fd, Frame_ping );
+	send_empty_frame( fd, Frame_ping );
+	send_empty_frame( fd, Frame_ping );
 	
 	CHECK( shutdown( fd, SHUT_WR ) );
 	

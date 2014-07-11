@@ -39,8 +39,10 @@ namespace freemount
 	
 	enum frame_type
 	{
-		frag_ping = 1,
-		frag_pong = 2,
+		// control frames
+		
+		Frame_ping = 0xF1,
+		Frame_pong = 0xF0,
 		
 		frag_req = 3,
 		frag_eom = 4,
