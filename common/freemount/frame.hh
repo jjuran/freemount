@@ -61,6 +61,7 @@ namespace freemount
 		
 		Frame_request = 0,
 		Frame_submit  = 1,
+		Frame_cancel  = 2,
 		
 		Frame_arg_path = 4,
 		
@@ -70,6 +71,7 @@ namespace freemount
 		
 		// message frames (responses)
 		
+		Frame_accept = 64 + 0,
 		Frame_result = 64 + 1,
 		
 		Frame_dentry_name = 64 + 7,
