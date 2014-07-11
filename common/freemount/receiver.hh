@@ -10,24 +10,24 @@
 #include "plus/var_string.hh"
 
 // freemount
-#include "freemount/fragment.hh"
+#include "freemount/frame.hh"
 
 
 namespace freemount
 {
 	
-	typedef int (*fragment_handler_function)( void*, const fragment_header& );
+	typedef int (*frame_handler_function)( void*, const frame_header& );
 	
 	class data_receiver
 	{
 		private:
 			plus::var_string  its_buffer;
 			
-			fragment_handler_function  its_handler;
-			void*                      its_context;
+			frame_handler_function  its_handler;
+			void*                   its_context;
 		
 		public:
-			data_receiver( fragment_handler_function handler, void* context );
+			data_receiver( frame_handler_function handler, void* context );
 			
 			int recv_bytes( const char* buffer, std::size_t n );
 	};
@@ -35,4 +35,3 @@ namespace freemount
 }
 
 #endif
-

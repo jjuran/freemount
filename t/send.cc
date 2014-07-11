@@ -20,7 +20,7 @@
 static const unsigned n_tests = 2;
 
 
-using freemount::send_empty_fragment;
+using freemount::send_empty_frame;
 
 using tap::ok_if;
 
@@ -31,7 +31,7 @@ static void send_empty()
 	
 	CHECK( pipe( fds ) );
 	
-	send_empty_fragment( fds[1], 0x2B );
+	send_empty_frame( fds[1], 0x2B );
 	
 	char buffer[ 9 ];
 	

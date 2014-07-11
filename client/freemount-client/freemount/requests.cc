@@ -28,9 +28,9 @@ namespace freemount
 	
 	void send_path_request( int fd, const char* path, uint32_t size, uint8_t r_type, uint8_t r_id )
 	{
-		fragment_header req_and_path[ 2 ] = { { 0 }, { 0 } };
+		frame_header req_and_path[ 2 ] = { { 0 }, { 0 } };
 		
-		fragment_header eom = { 0 };
+		frame_header eom = { 0 };
 		
 		req_and_path[ 0 ].r_id = r_id;
 		req_and_path[ 0 ].type = frag_req;
@@ -62,7 +62,7 @@ namespace freemount
 			p7::throw_errno( errno );
 		}
 		
-		if ( n_written != 3 * sizeof (fragment_header) + size + pad_length )
+		if ( n_written != 3 * sizeof (frame_header) + size + pad_length )
 		{
 			p7::throw_errno( EINTR );
 		}

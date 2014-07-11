@@ -1,10 +1,10 @@
 /*
-	freemount/fragment.hh
-	---------------------
+	freemount/frame.hh
+	------------------
 */
 
-#ifndef FREEMOUNT_FRAGMENT_HH
-#define FREEMOUNT_FRAGMENT_HH
+#ifndef FREEMOUNT_FRAME_HH
+#define FREEMOUNT_FRAME_HH
 
 // Standard C
 #include <stdint.h>
@@ -13,7 +13,7 @@
 namespace freemount
 {
 	
-	struct fragment_header
+	struct frame_header
 	{
 		uint8_t   _0;
 		uint8_t   _1;
@@ -21,23 +21,23 @@ namespace freemount
 		
 		uint8_t   c_id;  // chain id
 		uint8_t   r_id;  // request id
-		uint8_t   type;  // fragment type
+		uint8_t   type;  // frame type
 		uint8_t   data;  // request type
 	};
 	
-	#define FREEMOUNT_FRAGMENT_HEADER_INITIALIZER  { 0, 0, 0,  0, 0, 0, 0 }
+	#define FREEMOUNT_FRAME_HEADER_INITIALIZER  { 0, 0, 0,  0, 0, 0, 0 }
 	
 	
-	inline const void* get_data( const fragment_header& frame )
+	inline const void* get_data( const frame_header& frame )
 	{
 		return &frame + 1;
 	}
 	
-	uint32_t get_u32( const fragment_header& frame );
-	uint64_t get_u64( const fragment_header& frame );
+	uint32_t get_u32( const frame_header& frame );
+	uint64_t get_u64( const frame_header& frame );
 	
 	
-	enum fragment_type
+	enum frame_type
 	{
 		frag_ping = 1,
 		frag_pong = 2,
@@ -87,4 +87,3 @@ namespace freemount
 
 
 #endif
-

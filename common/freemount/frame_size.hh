@@ -13,13 +13,13 @@
 #include "iota/endian.hh"
 
 // freemount
-#include "freemount/fragment.hh"
+#include "freemount/frame.hh"
 
 
 namespace freemount
 {
 	
-	inline uint16_t get_size( const fragment_header& frame )
+	inline uint16_t get_size( const frame_header& frame )
 	{
 		return iota::u16_from_big( frame.big_size );
 	}
@@ -28,4 +28,3 @@ namespace freemount
 
 
 #endif
-

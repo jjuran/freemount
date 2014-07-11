@@ -202,9 +202,9 @@ static void send_list_request( const plus::string& path, uint8_t r_id )
 	send_list_request( protocol_out, path.data(), path.size(), r_id );
 }
 
-static plus::string string_from_fragment( const fragment_header& fragment )
+static plus::string string_from_frame( const frame_header& frame )
 {
-	plus::string result( (const char*) get_data( fragment ), get_size( fragment ) );
+	plus::string result( (const char*) get_data( frame ), get_size( frame ) );
 	
 	return result;
 }
@@ -214,9 +214,9 @@ static void report_error( uint32_t err )
 	more::perror( "fls", the_path.c_str(), err );
 }
 
-static int fragment_handler( void* that, const fragment_header& fragment )
+static int frame_handler( void* that, const frame_header& frame )
 {
-	const uint8_t request_id = fragment.r_id;
+	const uint8_t request_id = frame.r_id;
 	
 	typedef std::map< uint8_t, stat_response >::iterator Iter;
 	
@@ -226,18 +226,18 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 	{
 		stat_response& st = it->second;
 		
-		switch ( fragment.type )
+		switch ( frame.type )
 		{
 			case frag_stat_mode:
-				st.mode = get_u32( fragment );
+				st.mode = get_u32( frame );
 				break;
 			
 			case frag_stat_nlink:
-				st.nlink = get_u32( fragment );
+				st.nlink = get_u32( frame );
 				break;
 			
 			case frag_stat_size:
-				st.size = get_u64( fragment );
+				st.size = get_u64( frame );
 				break;
 			
 			case frag_eom:
@@ -267,7 +267,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 				break;
 			
 			case frag_err:
-				report_error( get_u32( fragment ) );
+				report_error( get_u32( frame ) );
 				exit( 1 );
 				break;
 			
@@ -280,12 +280,12 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 		return 0;
 	}
 	
-	switch ( fragment.type )
+	switch ( frame.type )
 	{
 		case frag_dentry_name:
 			if ( const uint8_t id = next_id() )
 			{
-				const plus::string name = string_from_fragment( fragment );
+				const plus::string name = string_from_frame( frame );
 				
 				send_stat_request( the_path + name, id );
 				
@@ -293,7 +293,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			}
 			else
 			{
-				write( STDOUT_FILENO, get_data( fragment ), get_size( fragment ) );
+				write( STDOUT_FILENO, get_data( frame ), get_size( frame ) );
 				write( STDOUT_FILENO, STR_LEN( ": skipped\n" ) );
 			}
 			
@@ -307,7 +307,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_err:
-			report_error( get_u32( fragment ) );
+			report_error( get_u32( frame ) );
 			exit( 1 );
 			break;
 		
@@ -350,10 +350,9 @@ int main( int argc, char** argv )
 	
 	send_stat_request( the_path, 0 );
 	
-	data_receiver r( &fragment_handler, NULL );
+	data_receiver r( &frame_handler, NULL );
 	
 	int looped = run_event_loop( r, protocol_in );
 	
 	return looped != 0;
 }
-

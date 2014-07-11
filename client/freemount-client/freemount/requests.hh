@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 // freemount
-#include "freemount/fragment.hh"
+#include "freemount/frame.hh"
 
 
 namespace freemount

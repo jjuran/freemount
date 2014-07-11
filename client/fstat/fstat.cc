@@ -112,20 +112,20 @@ static void report_error( uint32_t err )
 	more::perror( "fstat", the_path, err );
 }
 
-static int fragment_handler( void* that, const fragment_header& fragment )
+static int frame_handler( void* that, const frame_header& frame )
 {
-	switch ( fragment.type )
+	switch ( frame.type )
 	{
 		case frag_stat_mode:
-			print_mode( get_u32( fragment ) );
+			print_mode( get_u32( frame ) );
 			break;
 		
 		case frag_stat_nlink:
-			print_number( get_u32( fragment ) );
+			print_number( get_u32( frame ) );
 			break;
 		
 		case frag_stat_size:
-			print_number( get_u64( fragment ) );
+			print_number( get_u64( frame ) );
 			break;
 		
 		case frag_eom:
@@ -136,7 +136,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_err:
-			report_error( get_u32( fragment ) );
+			report_error( get_u32( frame ) );
 			exit( 1 );
 			break;
 		
@@ -179,10 +179,9 @@ int main( int argc, char** argv )
 	
 	send_stat_request( protocol_out, the_path, strlen( the_path ) );
 	
-	data_receiver r( &fragment_handler, NULL );
+	data_receiver r( &frame_handler, NULL );
 	
 	int looped = run_event_loop( r, protocol_in );
 	
 	return looped != 0;
 }
-

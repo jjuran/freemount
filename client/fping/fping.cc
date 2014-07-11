@@ -44,14 +44,14 @@ static int count = -1;
 
 static int event_loop_result;
 
-static int fragment_handler( void* that, const fragment_header& fragment )
+static int frame_handler( void* that, const frame_header& frame )
 {
-	switch ( fragment.type )
+	switch ( frame.type )
 	{
 		case frag_ping:
 			write( STDERR_FILENO, STR_LEN( "ping\n" ) );
 			
-			send_empty_fragment( protocol_out, frag_pong );
+			send_empty_frame( protocol_out, frag_pong );
 			break;
 		
 		case frag_pong:
@@ -67,7 +67,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 
 static void* event_loop_start( void* arg )
 {
-	data_receiver r( &fragment_handler, NULL );
+	data_receiver r( &frame_handler, NULL );
 	
 	event_loop_result = run_event_loop( r, protocol_in );
 	
@@ -78,7 +78,7 @@ static void* pinger_start( void* arg )
 {
 	for ( ;; )
 	{
-		send_empty_fragment( protocol_out, frag_ping );
+		send_empty_frame( protocol_out, frag_ping );
 		
 		if ( count > 0  &&  --count == 0 )
 		{
@@ -201,4 +201,3 @@ int main( int argc, char** argv )
 	
 	return event_loop_result != 0;
 }
-

@@ -10,7 +10,7 @@
 #include "plus/string.hh"
 
 // freemount
-#include "freemount/fragment.hh"
+#include "freemount/frame.hh"
 
 
 namespace freemount

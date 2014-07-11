@@ -33,9 +33,9 @@ using tap::ok_if;
 static int n_pongs;
 
 
-static int client_fragment_handler( void* that, const fragment_header& fragment )
+static int client_frame_handler( void* that, const frame_header& frame )
 {
-	switch ( fragment.type )
+	switch ( frame.type )
 	{
 		case frag_pong:
 			++n_pongs;
@@ -48,12 +48,12 @@ static int client_fragment_handler( void* that, const fragment_header& fragment 
 	return 0;
 }
 
-static int server_fragment_handler( void* that, const fragment_header& fragment )
+static int server_frame_handler( void* that, const frame_header& frame )
 {
-	switch ( fragment.type )
+	switch ( frame.type )
 	{
 		case frag_ping:
-			send_empty_fragment( STDOUT_FILENO, frag_pong );
+			send_empty_frame( STDOUT_FILENO, frag_pong );
 			break;
 		
 		default:
@@ -65,20 +65,20 @@ static int server_fragment_handler( void* that, const fragment_header& fragment 
 
 static int client( int fd )
 {
-	send_empty_fragment( fd, frag_ping );
-	send_empty_fragment( fd, frag_ping );
-	send_empty_fragment( fd, frag_ping );
+	send_empty_frame( fd, frag_ping );
+	send_empty_frame( fd, frag_ping );
+	send_empty_frame( fd, frag_ping );
 	
 	CHECK( shutdown( fd, SHUT_WR ) );
 	
-	data_receiver r( &client_fragment_handler, NULL );
+	data_receiver r( &client_frame_handler, NULL );
 	
 	return run_event_loop( r, fd );
 }
 
 static int server()
 {
-	data_receiver r( &server_fragment_handler, NULL );
+	data_receiver r( &server_frame_handler, NULL );
 	
 	return run_event_loop( r, STDIN_FILENO );
 }
@@ -127,4 +127,3 @@ int main( int argc, char** argv )
 	
 	return 0;
 }
-

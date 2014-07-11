@@ -61,16 +61,16 @@ static int stat( session& s, uint8_t r_id, const request& r )
 	
 	const mode_t mode = sb.st_mode;
 	
-	send_u32_fragment( s.send_fd, frag_stat_mode, mode, r_id );
+	send_u32_frame( s.send_fd, frag_stat_mode, mode, r_id );
 	
 	if ( S_ISDIR( mode )  &&  sb.st_nlink > 1 )
 	{
-		send_u32_fragment( s.send_fd, frag_stat_nlink, sb.st_nlink, r_id );
+		send_u32_frame( s.send_fd, frag_stat_nlink, sb.st_nlink, r_id );
 	}
 	
 	if ( S_ISREG( mode ) )
 	{
-		send_u64_fragment( s.send_fd, frag_stat_size, sb.st_size, r_id );
+		send_u64_frame( s.send_fd, frag_stat_size, sb.st_size, r_id );
 	}
 	
 	return 0;
@@ -99,7 +99,7 @@ static int list( session& s, uint8_t r_id, const request& r )
 		
 		const plus::string& name = entry.name;
 		
-		send_string_fragment( s.send_fd, frag_dentry_name, name.data(), name.size(), r_id );
+		send_string_frame( s.send_fd, frag_dentry_name, name.data(), name.size(), r_id );
 	}
 	
 	return 0;
@@ -144,12 +144,12 @@ static int read( session& s, uint8_t r_id, const request& r )
 			break;
 		}
 		
-		send_string_fragment( s.send_fd, frag_io_data, buffer, n_read, r_id );
+		send_string_frame( s.send_fd, frag_io_data, buffer, n_read, r_id );
 		
 		position += n_read;
 	}
 	
-	send_empty_fragment( s.send_fd, frag_io_eof, r_id );
+	send_empty_frame( s.send_fd, frag_io_eof, r_id );
 	
 	return 0;
 }
@@ -160,36 +160,36 @@ static void send_response( int fd, int result, uint8_t r_id )
 	{
 		write( STDERR_FILENO, STR_LEN( " ok\n" ) );
 		
-		send_empty_fragment( fd, frag_eom, r_id );
+		send_empty_frame( fd, frag_eom, r_id );
 	}
 	else
 	{
 		write( STDERR_FILENO, STR_LEN( " err\n" ) );
 		
-		send_u32_fragment( fd, frag_err, -result, r_id );
+		send_u32_frame( fd, frag_err, -result, r_id );
 	}
 }
 
-int fragment_handler( void* that, const fragment_header& fragment )
+int frame_handler( void* that, const frame_header& frame )
 {
 	session& s = *(session*) that;
 	
-	if ( fragment.type == frag_ping )
+	if ( frame.type == frag_ping )
 	{
 		write( STDERR_FILENO, STR_LEN( "ping\n" ) );
 		
-		send_empty_fragment( s.send_fd, frag_pong );
+		send_empty_frame( s.send_fd, frag_pong );
 		
 		return 0;
 	}
 	
-	const uint8_t request_id = fragment.r_id;
+	const uint8_t request_id = frame.r_id;
 	
 	request* req = s.get_request( request_id );
 	
-	if ( fragment.type == frag_req )
+	if ( frame.type == frag_req )
 	{
-		switch ( fragment.data )
+		switch ( frame.data )
 		{
 			case req_auth:
 				write( STDERR_FILENO, STR_LEN( "auth..." ) );
@@ -218,7 +218,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 			abort();
 		}
 		
-		s.set_request( request_id, new request( request_type( fragment.data ) ) );
+		s.set_request( request_id, new request( request_type( frame.data ) ) );
 		
 		return 0;
 	}
@@ -232,7 +232,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 	
 	request& r = *req;
 	
-	switch ( fragment.type )
+	switch ( frame.type )
 	{
 		case frag_file_path:
 			switch ( r.type )
@@ -246,7 +246,7 @@ int fragment_handler( void* that, const fragment_header& fragment )
 					abort();
 			}
 			
-			r.path.assign( (const char*) get_data( fragment ), get_size( fragment ) );
+			r.path.assign( (const char*) get_data( frame ), get_size( frame ) );
 			break;
 		
 		case frag_eom:

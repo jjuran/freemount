@@ -12,7 +12,7 @@
 namespace freemount
 {
 	
-	data_receiver::data_receiver( fragment_handler_function handler, void* context )
+	data_receiver::data_receiver( frame_handler_function handler, void* context )
 	:
 		its_handler( handler ),
 		its_context( context )
@@ -35,16 +35,16 @@ namespace freemount
 		
 		const char* p = data;
 		
-		while ( data_size >= sizeof (fragment_header) )
+		while ( data_size >= sizeof (frame_header) )
 		{
-			const fragment_header& h = *(const fragment_header*) p;
+			const frame_header& h = *(const frame_header*) p;
 			
 			const size_t payload_size = iota::u16_from_big( h.big_size );
 			
-			const size_t fragment_size = sizeof (fragment_header)
-			                           + pad( payload_size, 4 );
+			const size_t frame_size = sizeof (frame_header)
+			                        + pad( payload_size, 4 );
 			
-			if ( data_size < fragment_size )
+			if ( data_size < frame_size )
 			{
 				break;
 			}
@@ -56,8 +56,8 @@ namespace freemount
 				return status;
 			}
 			
-			data_size -= fragment_size;
-			p         += fragment_size;
+			data_size -= frame_size;
+			p         += frame_size;
 		}
 		
 		if ( p != data )
@@ -69,4 +69,3 @@ namespace freemount
 	}
 	
 }
-

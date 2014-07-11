@@ -1,9 +1,9 @@
 /*
-	freemount/fragment.cc
-	---------------------
+	freemount/frame.cc
+	------------------
 */
 
-#include "freemount/fragment.hh"
+#include "freemount/frame.hh"
 
 // iota
 #include "iota/endian.hh"
@@ -16,7 +16,7 @@ namespace freemount
 	class bad_integer_size {};
 	
 	
-	uint32_t get_u32( const fragment_header& frame )
+	uint32_t get_u32( const frame_header& frame )
 	{
 		uint64_t result = get_u64( frame );
 		
@@ -28,7 +28,7 @@ namespace freemount
 		return result;
 	}
 	
-	uint64_t get_u64( const fragment_header& frame )
+	uint64_t get_u64( const frame_header& frame )
 	{
 		const int big_sizeof_32 = iota::big_u16( sizeof (uint32_t) );
 		const int big_sizeof_64 = iota::big_u16( sizeof (uint64_t) );

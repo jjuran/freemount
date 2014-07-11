@@ -46,12 +46,12 @@ static void report_error( uint32_t err )
 	more::perror( "fcat", the_path, err );
 }
 
-static int fragment_handler( void* that, const fragment_header& fragment )
+static int frame_handler( void* that, const frame_header& frame )
 {
-	switch ( fragment.type )
+	switch ( frame.type )
 	{
 		case frag_io_data:
-			write( STDOUT_FILENO, get_data( fragment ), get_size( fragment ) );
+			write( STDOUT_FILENO, get_data( frame ), get_size( frame ) );
 			break;
 		
 		case frag_io_eof:
@@ -62,7 +62,7 @@ static int fragment_handler( void* that, const fragment_header& fragment )
 			break;
 		
 		case frag_err:
-			report_error( get_u32( fragment ) );
+			report_error( get_u32( frame ) );
 			exit( 1 );
 			break;
 		
@@ -105,10 +105,9 @@ int main( int argc, char** argv )
 	
 	send_read_request( protocol_out, the_path, strlen( the_path ) );
 	
-	data_receiver r( &fragment_handler, NULL );
+	data_receiver r( &frame_handler, NULL );
 	
 	int looped = run_event_loop( r, protocol_in );
 	
 	return looped != 0;
 }
-

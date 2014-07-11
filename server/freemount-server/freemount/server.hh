@@ -13,11 +13,10 @@
 namespace freemount
 {
 	
-	struct fragment_header;
+	struct frame_header;
 	
-	int fragment_handler( void* that, const fragment_header& fragment );
+	int frame_handler( void* that, const frame_header& frame );
 	
 }
 
 #endif
-

@@ -179,10 +179,9 @@ int main( int argc, char** argv )
 	
 	session s( STDOUT_FILENO, root(), root() );
 	
-	data_receiver r( &fragment_handler, &s );
+	data_receiver r( &frame_handler, &s );
 	
 	int looped = run_event_loop( r, STDIN_FILENO );
 	
 	return looped != 0;
 }
-
