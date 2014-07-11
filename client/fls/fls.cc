@@ -14,6 +14,9 @@
 // Standard C++
 #include <map>
 
+// more-posix
+#include "more/perror.hh"
+
 // gear
 #include "gear/inscribe_decimal.hh"
 
@@ -208,17 +211,7 @@ static plus::string string_from_fragment( const fragment_header& fragment )
 
 static void report_error( uint32_t err )
 {
-	write( STDERR_FILENO, STR_LEN( "fls: " ) );
-	
-	write( STDERR_FILENO, the_path.data(), the_path.size() );
-	
-	write( STDERR_FILENO, STR_LEN( ": " ) );
-	
-	const char* error = strerror( err );
-	
-	write( STDERR_FILENO, error, strlen( error ) );
-	
-	write( STDERR_FILENO, STR_LEN( "\n" ) );
+	more::perror( "fls", the_path.c_str(), err );
 }
 
 static int fragment_handler( void* that, const fragment_header& fragment )
