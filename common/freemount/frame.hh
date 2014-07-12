@@ -54,10 +54,6 @@ namespace freemount
 		Frame_result = 64 + 1,
 		
 		
-		frag_req = 3,
-		frag_eom = 4,
-		frag_err = 5,
-		
 		frag_file_path = 9,
 		frag_file_fd = 10,
 		
