@@ -5,6 +5,7 @@
 
 // POSIX
 #include <unistd.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 
 // Standard C
@@ -49,6 +50,8 @@ static int protocol_out = -1;
 
 
 static plus::string the_path = "/";
+
+static int the_result;
 
 
 struct stat_response
@@ -209,11 +212,6 @@ static plus::string string_from_frame( const frame_header& frame )
 	return result;
 }
 
-static void report_error( uint32_t err )
-{
-	more::perror( "fls", the_path.c_str(), err );
-}
-
 static int frame_handler( void* that, const frame_header& frame )
 {
 	const uint8_t request_id = frame.r_id;
@@ -260,15 +258,16 @@ static int frame_handler( void* that, const frame_header& frame )
 					
 					if ( the_stats.empty() )
 					{
-						exit( 0 );
+						shutdown( protocol_out, SHUT_WR );
 					}
 				}
 				
 				break;
 			
 			case frag_err:
-				report_error( get_u32( frame ) );
-				exit( 1 );
+				the_result = get_u32( frame );
+				
+				shutdown( protocol_out, SHUT_WR );
 				break;
 			
 			default:
@@ -302,13 +301,14 @@ static int frame_handler( void* that, const frame_header& frame )
 		case frag_eom:
 			if ( the_stats.empty() )
 			{
-				exit( 0 );
+				shutdown( protocol_out, SHUT_WR );
 			}
 			break;
 		
 		case frag_err:
-			report_error( get_u32( frame ) );
-			exit( 1 );
+			the_result = get_u32( frame );
+			
+			shutdown( protocol_out, SHUT_WR );
 			break;
 		
 		default:
@@ -354,5 +354,19 @@ int main( int argc, char** argv )
 	
 	int looped = run_event_loop( r, protocol_in );
 	
-	return looped != 0;
+	if ( looped < 0 )
+	{
+		more::perror( "fls", -looped );
+		
+		return 1;
+	}
+	
+	if ( the_result != 0 )
+	{
+		more::perror( "fls", the_path.c_str(), the_result );
+		
+		return 1;
+	}
+	
+	return 0;
 }

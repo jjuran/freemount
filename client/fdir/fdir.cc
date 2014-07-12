@@ -5,6 +5,7 @@
 
 // POSIX
 #include <unistd.h>
+#include <sys/socket.h>
 
 // Standard C
 #include <stdlib.h>
@@ -40,11 +41,8 @@ static int protocol_out = -1;
 
 static const char* the_path = "/";
 
+static int the_result;
 
-static void report_error( uint32_t err )
-{
-	more::perror( "fdir", the_path, err );
-}
 
 static int frame_handler( void* that, const frame_header& frame )
 {
@@ -56,12 +54,13 @@ static int frame_handler( void* that, const frame_header& frame )
 			break;
 		
 		case frag_eom:
-			exit( 0 );
+			shutdown( protocol_out, SHUT_WR );
 			break;
 		
 		case frag_err:
-			report_error( get_u32( frame ) );
-			exit( 1 );
+			the_result = get_u32( frame );
+			
+			shutdown( protocol_out, SHUT_WR );
 			break;
 		
 		default:
@@ -107,5 +106,19 @@ int main( int argc, char** argv )
 	
 	int looped = run_event_loop( r, protocol_in );
 	
-	return looped != 0;
+	if ( looped < 0 )
+	{
+		more::perror( "fdir", -looped );
+		
+		return 1;
+	}
+	
+	if ( the_result != 0 )
+	{
+		more::perror( "fdir", the_path, the_result );
+		
+		return 1;
+	}
+	
+	return 0;
 }
