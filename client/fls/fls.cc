@@ -239,6 +239,16 @@ static int frame_handler( void* that, const frame_header& frame )
 				break;
 			
 			case frag_eom:
+			case frag_err:
+				if ( int err = get_u32( frame ) )
+				{
+					the_result = err;
+					
+					shutdown( protocol_out, SHUT_WR );
+					
+					break;
+				}
+				
 				if ( request_id == 0  &&  S_ISDIR( st.mode ) )
 				{
 					the_stats.erase( 0 );
@@ -262,12 +272,6 @@ static int frame_handler( void* that, const frame_header& frame )
 					}
 				}
 				
-				break;
-			
-			case frag_err:
-				the_result = get_u32( frame );
-				
-				shutdown( protocol_out, SHUT_WR );
 				break;
 			
 			default:
@@ -299,16 +303,16 @@ static int frame_handler( void* that, const frame_header& frame )
 			break;
 		
 		case frag_eom:
-			if ( the_stats.empty() )
+		case frag_err:
+			if ( int err = get_u32( frame ) )
+			{
+				the_result = err;
+			}
+			
+			if ( the_result != 0  ||  the_stats.empty() )
 			{
 				shutdown( protocol_out, SHUT_WR );
 			}
-			break;
-		
-		case frag_err:
-			the_result = get_u32( frame );
-			
-			shutdown( protocol_out, SHUT_WR );
 			break;
 		
 		default:

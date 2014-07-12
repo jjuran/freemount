@@ -54,9 +54,6 @@ static int frame_handler( void* that, const frame_header& frame )
 			break;
 		
 		case frag_eom:
-			shutdown( protocol_out, SHUT_WR );
-			break;
-		
 		case frag_err:
 			the_result = get_u32( frame );
 			
