@@ -160,13 +160,13 @@ static void send_response( int fd, int result, uint8_t r_id )
 	{
 		write( STDERR_FILENO, STR_LEN( " ok\n" ) );
 		
-		send_empty_frame( fd, frag_eom, r_id );
+		send_empty_frame( fd, Frame_result, r_id );
 	}
 	else
 	{
 		write( STDERR_FILENO, STR_LEN( " err\n" ) );
 		
-		send_u32_frame( fd, frag_err, -result, r_id );
+		send_u32_frame( fd, Frame_result, -result, r_id );
 	}
 }
 

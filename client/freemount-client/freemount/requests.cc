@@ -33,7 +33,7 @@ namespace freemount
 		frame_header eom = { 0 };
 		
 		req_and_path[ 0 ].r_id = r_id;
-		req_and_path[ 0 ].type = frag_req;
+		req_and_path[ 0 ].type = Frame_request;
 		req_and_path[ 0 ].data = r_type;
 		
 		req_and_path[ 1 ].big_size = iota::big_u16( size );
@@ -45,7 +45,7 @@ namespace freemount
 		const int pad_length = 3 - (size + 3 & 0x3);
 		
 		eom.r_id = r_id;
-		eom.type = frag_eom;
+		eom.type = Frame_submit;
 		
 		struct iovec iov[] =
 		{

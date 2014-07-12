@@ -35,10 +35,10 @@ namespace freemount
 		};
 		
 		headers[0].r_id = r_id;
-		headers[0].type = frag_req;
+		headers[0].type = Frame_request;
 		headers[0].data = req_type;
 		headers[1].r_id = r_id;
-		headers[1].type = frag_eom;
+		headers[1].type = Frame_submit;
 		
 		write_in_full( fd, headers, sizeof headers );
 	}
