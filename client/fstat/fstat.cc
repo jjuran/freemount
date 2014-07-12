@@ -129,9 +129,9 @@ static int frame_handler( void* that, const frame_header& frame )
 			break;
 		
 		case frag_eom:
-			write( STDERR_FILENO, STR_LEN( "  " ) );
+			write( STDOUT_FILENO, STR_LEN( "  " ) );
 			write( STDOUT_FILENO, the_path, strlen( the_path ) );
-			write( STDERR_FILENO, STR_LEN( "\n" ) );
+			write( STDOUT_FILENO, STR_LEN( "\n" ) );
 			exit( 0 );
 			break;
 		
