@@ -17,6 +17,7 @@ namespace freemount
 	
 	void send_empty_request( int fd, uint8_t req_type, uint8_t r_id = 0 );
 	
+	void send_u8_frame ( int fd, uint8_t type, uint8_t  data, uint8_t r_id = 0 );
 	void send_u32_frame( int fd, uint8_t type, uint32_t data, uint8_t r_id = 0 );
 	void send_u64_frame( int fd, uint8_t type, uint64_t data, uint8_t r_id = 0 );
 	

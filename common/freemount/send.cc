@@ -43,6 +43,17 @@ namespace freemount
 		write_in_full( fd, headers, sizeof headers );
 	}
 	
+	void send_u8_frame( int fd, uint8_t type, uint8_t data, uint8_t r_id )
+	{
+		frame_header header = FREEMOUNT_FRAME_HEADER_INITIALIZER;
+		
+		header.r_id = r_id;
+		header.type = type;
+		header.data = data;
+		
+		write_in_full( fd, &header, sizeof header );
+	}
+	
 	void send_u32_frame( int fd, uint8_t type, uint32_t data, uint8_t r_id )
 	{
 		const size_t buffer_size = sizeof (frame_header) + sizeof (uint32_t);
