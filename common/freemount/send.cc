@@ -116,6 +116,13 @@ namespace freemount
 	
 	void send_string_frame( int fd, uint8_t type, const char* data, uint16_t length, uint8_t r_id )
 	{
+		if ( length == 1  &&  *data != '\0' )
+		{
+			send_u8_frame( fd, type, *data, r_id );
+			
+			return;
+		}
+		
 		const size_t buffer_size = sizeof (frame_header) + length;
 		
 		frame_header h = { 0 };
