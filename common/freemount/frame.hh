@@ -55,9 +55,19 @@ namespace freemount
 		Frame_request = 0,
 		Frame_submit  = 1,
 		
+		Frame_arg_path = 4,
+		
 		// message frames (responses)
 		
 		Frame_result = 64 + 1,
+		
+		Frame_dentry_name = 64 + 7,
+		
+		Frame_recv_data = 64 + 8,
+		
+		Frame_stat_mode  = 64 + 18,
+		Frame_stat_nlink = 64 + 19,
+		Frame_stat_size  = 64 + 23,
 		
 		
 		frag_file_path = 9,
