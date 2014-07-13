@@ -287,6 +287,7 @@ static int frame_handler( void* that, const frame_header& frame )
 	
 	switch ( frame.type )
 	{
+		case Frame_dentry_name:
 		case frag_dentry_name:
 			if ( const uint8_t id = next_id() )
 			{
