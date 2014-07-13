@@ -149,8 +149,6 @@ static int read( session& s, uint8_t r_id, const request& r )
 		position += n_read;
 	}
 	
-	send_empty_frame( s.send_fd, frag_io_eof, r_id );
-	
 	return 0;
 }
 
