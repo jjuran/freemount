@@ -35,7 +35,8 @@ namespace freemount
 	
 	inline const void* get_data( const frame_header& frame )
 	{
-		return &frame + 1;
+		return frame.big_size != 0 ? get_payload_data( frame )
+		                           : &frame.data;
 	}
 	
 	uint32_t get_u32( const frame_header& frame );
