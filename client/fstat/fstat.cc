@@ -114,14 +114,17 @@ static int frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{
+		case Frame_stat_mode:
 		case frag_stat_mode:
 			print_mode( get_u32( frame ) );
 			break;
 		
+		case Frame_stat_nlink:
 		case frag_stat_nlink:
 			print_number( get_u32( frame ) );
 			break;
 		
+		case Frame_stat_size:
 		case frag_stat_size:
 			print_number( get_u64( frame ) );
 			break;
