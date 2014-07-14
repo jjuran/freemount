@@ -22,6 +22,7 @@
 #include "vfs/filehandle.hh"
 #include "vfs/node.hh"
 #include "vfs/filehandle/primitives/pread.hh"
+#include "vfs/filehandle/primitives/read.hh"
 #include "vfs/functions/resolve_pathname.hh"
 #include "vfs/primitives/listdir.hh"
 #include "vfs/primitives/open.hh"
@@ -122,8 +123,6 @@ static int read( session& s, uint8_t r_id, const request& r )
 		return -err;
 	}
 	
-	off_t position = 0;
-	
 	while ( true )
 	{
 		char buffer[ 4096 ];
@@ -132,7 +131,7 @@ static int read( session& s, uint8_t r_id, const request& r )
 		
 		try
 		{
-			n_read = pread( *file, buffer, sizeof buffer, position );
+			n_read = read( *file, buffer, sizeof buffer );
 		}
 		catch ( const p7::errno_t& err )
 		{
@@ -145,8 +144,6 @@ static int read( session& s, uint8_t r_id, const request& r )
 		}
 		
 		send_string_frame( s.send_fd, frag_io_data, buffer, n_read, r_id );
-		
-		position += n_read;
 	}
 	
 	return 0;
