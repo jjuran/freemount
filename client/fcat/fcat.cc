@@ -52,7 +52,6 @@ static int frame_handler( void* that, const frame_header& frame )
 			break;
 		
 		case Frame_recv_data:
-		case frag_io_data:
 			write( STDOUT_FILENO, get_data( frame ), get_size( frame ) );
 			break;
 		

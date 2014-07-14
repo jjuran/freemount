@@ -238,7 +238,6 @@ int frame_handler( void* that, const frame_header& frame )
 	switch ( frame.type )
 	{
 		case Frame_arg_path:
-		case frag_file_path:
 			switch ( r.type )
 			{
 				case req_stat:

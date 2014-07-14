@@ -49,7 +49,6 @@ static int frame_handler( void* that, const frame_header& frame )
 	switch ( frame.type )
 	{
 		case Frame_dentry_name:
-		case frag_dentry_name:
 			write( STDOUT_FILENO, get_data( frame ), get_size( frame ) );
 			write( STDOUT_FILENO, STR_LEN( "\n" ) );
 			break;
