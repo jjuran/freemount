@@ -133,6 +133,8 @@ static int read( session& s, uint8_t r_id, const request& r )
 	
 	int64_t n_requested = r.n;
 	
+	off_t offset = r.offset;
+	
 	while ( true )
 	{
 		char buffer[ 4096 ];
@@ -152,7 +154,16 @@ static int read( session& s, uint8_t r_id, const request& r )
 		
 		try
 		{
-			n_read = read( *file, buffer, n );
+			if ( offset < 0 )
+			{
+				n_read = read( *file, buffer, n );
+			}
+			else
+			{
+				n_read = pread( *file, buffer, n, offset );
+				
+				offset += n_read;
+			}
 		}
 		catch ( const p7::errno_t& err )
 		{
