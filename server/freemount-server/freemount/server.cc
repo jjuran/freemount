@@ -21,6 +21,7 @@
 #include "vfs/dir_entry.hh"
 #include "vfs/filehandle.hh"
 #include "vfs/node.hh"
+#include "vfs/filehandle/primitives/geteof.hh"
 #include "vfs/filehandle/primitives/pread.hh"
 #include "vfs/filehandle/primitives/read.hh"
 #include "vfs/functions/resolve_pathname.hh"
@@ -117,6 +118,13 @@ static int read( session& s, uint8_t r_id, const request& r )
 		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
 		
 		file = open( *that, O_RDONLY, 0 );
+		
+		if ( S_ISREG( that->filemode() ) )
+		{
+			const uint64_t size = geteof( *file );
+			
+			send_u64_frame( s.send_fd, Frame_stat_size, size, r_id );
+		}
 	}
 	catch ( const p7::errno_t& err )
 	{
