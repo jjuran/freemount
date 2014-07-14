@@ -68,17 +68,6 @@ namespace freemount
 		Frame_stat_mode  = 64 + 18,
 		Frame_stat_nlink = 64 + 19,
 		Frame_stat_size  = 64 + 23,
-		
-		
-		frag_file_path = 9,
-		
-		frag_io_data = 12,
-		
-		frag_stat_mode = 16,
-		frag_stat_nlink = 17,
-		frag_stat_size = 18,
-		
-		frag_dentry_name = 32,
 	};
 	
 	enum request_type
