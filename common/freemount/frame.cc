@@ -40,12 +40,12 @@ namespace freemount
 		
 		if ( frame.big_size == big_sizeof_32 )
 		{
-			return iota::u32_from_big( *(uint32_t*) get_data( frame ) );
+			return iota::u32_from_big( *(uint32_t*) get_payload_data( frame ) );
 		}
 		
 		if ( frame.big_size == big_sizeof_64 )
 		{
-			return iota::u64_from_big( *(uint64_t*) get_data( frame ) );
+			return iota::u64_from_big( *(uint64_t*) get_payload_data( frame ) );
 		}
 		
 		throw bad_integer_size();

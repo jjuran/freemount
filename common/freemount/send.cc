@@ -43,8 +43,26 @@ namespace freemount
 		write_in_full( fd, headers, sizeof headers );
 	}
 	
+	void send_u8_frame( int fd, uint8_t type, uint8_t data, uint8_t r_id )
+	{
+		frame_header header = FREEMOUNT_FRAME_HEADER_INITIALIZER;
+		
+		header.r_id = r_id;
+		header.type = type;
+		header.data = data;
+		
+		write_in_full( fd, &header, sizeof header );
+	}
+	
 	void send_u32_frame( int fd, uint8_t type, uint32_t data, uint8_t r_id )
 	{
+		if ( data <= 0xFF )
+		{
+			send_u8_frame( fd, type, data, r_id );
+			
+			return;
+		}
+		
 		const size_t buffer_size = sizeof (frame_header) + sizeof (uint32_t);
 		
 		uint32_t buffer[ buffer_size / sizeof (uint32_t) ] = { 0 };
@@ -68,6 +86,13 @@ namespace freemount
 	
 	void send_u64_frame( int fd, uint8_t type, uint64_t data, uint8_t r_id )
 	{
+		if ( data <= 0xFFFFFFFFull )
+		{
+			send_u32_frame( fd, type, data, r_id );
+			
+			return;
+		}
+		
 		const size_t buffer_size = sizeof (frame_header) + sizeof (uint64_t);
 		
 		uint64_t buffer[ buffer_size / sizeof (uint64_t) ] = { 0 };
@@ -91,6 +116,13 @@ namespace freemount
 	
 	void send_string_frame( int fd, uint8_t type, const char* data, uint16_t length, uint8_t r_id )
 	{
+		if ( length == 1  &&  *data != '\0' )
+		{
+			send_u8_frame( fd, type, *data, r_id );
+			
+			return;
+		}
+		
 		const size_t buffer_size = sizeof (frame_header) + length;
 		
 		frame_header h = { 0 };

@@ -19,9 +19,15 @@
 namespace freemount
 {
 	
-	inline uint16_t get_size( const frame_header& frame )
+	inline uint16_t get_payload_size( const frame_header& frame )
 	{
 		return iota::u16_from_big( frame.big_size );
+	}
+	
+	inline uint16_t get_size( const frame_header& frame )
+	{
+		return frame.big_size != 0 ? get_payload_size( frame )
+		                           : frame.data != 0;
 	}
 	
 }
