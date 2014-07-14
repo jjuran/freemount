@@ -62,16 +62,16 @@ static int stat( session& s, uint8_t r_id, const request& r )
 	
 	const mode_t mode = sb.st_mode;
 	
-	send_u32_frame( s.send_fd, frag_stat_mode, mode, r_id );
+	send_u32_frame( s.send_fd, Frame_stat_mode, mode, r_id );
 	
 	if ( S_ISDIR( mode )  &&  sb.st_nlink > 1 )
 	{
-		send_u32_frame( s.send_fd, frag_stat_nlink, sb.st_nlink, r_id );
+		send_u32_frame( s.send_fd, Frame_stat_nlink, sb.st_nlink, r_id );
 	}
 	
 	if ( S_ISREG( mode ) )
 	{
-		send_u64_frame( s.send_fd, frag_stat_size, sb.st_size, r_id );
+		send_u64_frame( s.send_fd, Frame_stat_size, sb.st_size, r_id );
 	}
 	
 	return 0;
@@ -100,7 +100,7 @@ static int list( session& s, uint8_t r_id, const request& r )
 		
 		const plus::string& name = entry.name;
 		
-		send_string_frame( s.send_fd, frag_dentry_name, name.data(), name.size(), r_id );
+		send_string_frame( s.send_fd, Frame_dentry_name, name.data(), name.size(), r_id );
 	}
 	
 	return 0;
@@ -143,7 +143,7 @@ static int read( session& s, uint8_t r_id, const request& r )
 			break;
 		}
 		
-		send_string_frame( s.send_fd, frag_io_data, buffer, n_read, r_id );
+		send_string_frame( s.send_fd, Frame_recv_data, buffer, n_read, r_id );
 	}
 	
 	return 0;

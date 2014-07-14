@@ -38,7 +38,7 @@ namespace freemount
 		
 		req_and_path[ 1 ].big_size = iota::big_u16( size );
 		req_and_path[ 1 ].r_id = r_id;
-		req_and_path[ 1 ].type = frag_file_path;
+		req_and_path[ 1 ].type = Frame_arg_path;
 		
 		const void* zeroes = &eom;
 		
