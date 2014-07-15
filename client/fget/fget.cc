@@ -50,8 +50,31 @@ static const char* the_path;
 static uint64_t the_expected_size;
 static uint64_t n_written;
 
+static bool show_progress;
+static float the_divisor;
+
 static int the_result;
 
+
+static void update_progress()
+{
+	if ( show_progress  &&  the_expected_size != 0 )
+	{
+		int percent = int( n_written / the_divisor );
+		
+		printf( "\r%d%% (%llu / %llu)", percent, n_written, the_expected_size );
+		
+		fflush( stdout );
+	}
+}
+
+static void end_progress()
+{
+	if ( show_progress  &&  the_expected_size != 0 )
+	{
+		printf( "\n" );
+	}
+}
 
 static int frame_handler( void* that, const frame_header& frame )
 {
@@ -59,21 +82,27 @@ static int frame_handler( void* that, const frame_header& frame )
 	{
 		case Frame_stat_size:
 			the_expected_size = get_u64( frame );
+			the_divisor       = the_expected_size / 100.0;
 			break;
 		
 		case Frame_recv_data:
 			uint16_t size;
 			size = get_size( frame );
 			
+			n_written += size;
+			
+			update_progress();
+			
 			write_in_full( output_fd, get_data( frame ), size );
 			
-			n_written += size;
 			break;
 		
 		case Frame_result:
 			the_result = get_u32( frame );
 			
 			shutdown( protocol_out, SHUT_WR );
+			
+			end_progress();
 			break;
 		
 		default:
@@ -146,6 +175,8 @@ int main( int argc, char** argv )
 	{
 		return 2;  // path doesn't end with a non-slash, ergo not a file
 	}
+	
+	show_progress = isatty( 1 );
 	
 	open_file( name );
 	
