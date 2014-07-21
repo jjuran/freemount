@@ -131,15 +131,28 @@ static int read( session& s, uint8_t r_id, const request& r )
 		return -err;
 	}
 	
+	int64_t n_requested = r.n;
+	
 	while ( true )
 	{
 		char buffer[ 4096 ];
+		
+		size_t n = sizeof buffer;
+		
+		if ( n_requested == 0 )
+		{
+			break;
+		}
+		else if ( n_requested > 0  &&  n_requested < n )
+		{
+			n = n_requested;
+		}
 		
 		ssize_t n_read;
 		
 		try
 		{
-			n_read = read( *file, buffer, sizeof buffer );
+			n_read = read( *file, buffer, n );
 		}
 		catch ( const p7::errno_t& err )
 		{
@@ -149,6 +162,11 @@ static int read( session& s, uint8_t r_id, const request& r )
 		if ( n_read == 0 )
 		{
 			break;
+		}
+		
+		if ( n_requested > 0 )
+		{
+			n_requested -= n_read;
 		}
 		
 		send_string_frame( s.send_fd, Frame_recv_data, buffer, n_read, r_id );
