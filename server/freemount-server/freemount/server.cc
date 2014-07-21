@@ -252,6 +252,10 @@ int frame_handler( void* that, const frame_header& frame )
 			r.path.assign( (const char*) get_data( frame ), get_size( frame ) );
 			break;
 		
+		case Frame_io_count:
+			r.n = get_u64( frame );
+			break;
+		
 		case Frame_submit:
 			int err;
 			
