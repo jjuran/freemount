@@ -274,6 +274,10 @@ int frame_handler( void* that, const frame_header& frame )
 			r.n = get_u64( frame );
 			break;
 		
+		case Frame_seek_offset:
+			r.offset = get_u64( frame );
+			break;
+		
 		case Frame_submit:
 			int err;
 			
