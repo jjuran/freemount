@@ -57,7 +57,8 @@ namespace freemount
 		
 		Frame_arg_path = 4,
 		
-		Frame_io_count = 9,  // read() limit, write() total
+		Frame_io_count    = 9,  // read() limit, write() total
+		Frame_seek_offset = 10,
 		
 		// message frames (responses)
 		
