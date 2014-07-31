@@ -9,6 +9,7 @@
 #include <sys/uio.h>
 
 // Standard C
+#include <stdlib.h>
 #include <string.h>
 
 // vfs
@@ -52,9 +53,11 @@ static void bad_usage( const char* text, size_t text_size, const char* arg )
 	};
 	
 	writev( STDERR_FILENO, iov, ARRAYLEN( iov ) );
+	
+	exit( 2 );
 }
 
-#define BAD_USAGE( text, arg )  (bad_usage( STR_LEN( text ": " ), arg ), (char**) NULL)
+#define BAD_USAGE( text, arg )  bad_usage( STR_LEN( text ": " ), arg )
 
 static const char* find_char( const char* begin, char c )
 {
@@ -118,7 +121,7 @@ static char** get_options( char** argv )
 						
 						if ( *argv == NULL )
 						{
-							return BAD_USAGE( "Argument required", arg );
+							BAD_USAGE( "Argument required", arg );
 						}
 						
 						the_native_root_directory = *argv;
@@ -129,7 +132,7 @@ static char** get_options( char** argv )
 						
 						if ( param[0] == '\0' )
 						{
-							return BAD_USAGE( "Invalid option", arg );
+							BAD_USAGE( "Invalid option", arg );
 						}
 						
 						the_native_root_directory = param;
@@ -138,7 +141,7 @@ static char** get_options( char** argv )
 					continue;
 				}
 				
-				return BAD_USAGE( "Unknown option", arg );
+				BAD_USAGE( "Unknown option", arg );
 			}
 			
 			// short option
@@ -156,7 +159,7 @@ static char** get_options( char** argv )
 				continue;
 			}
 			
-			return BAD_USAGE( "Unknown option", arg );
+			BAD_USAGE( "Unknown option", arg );
 		}
 		
 		// not an option
@@ -169,11 +172,6 @@ static char** get_options( char** argv )
 int main( int argc, char** argv )
 {
 	char** params = get_options( argv );
-	
-	if ( params == NULL )
-	{
-		return 2;
-	}
 	
 	session s( STDOUT_FILENO, root(), root() );
 	
