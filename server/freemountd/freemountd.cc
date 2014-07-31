@@ -175,8 +175,6 @@ int main( int argc, char** argv )
 		return 2;
 	}
 	
-	int n_params = argc - (params - argv);
-	
 	session s( STDOUT_FILENO, root(), root() );
 	
 	data_receiver r( &frame_handler, &s );
