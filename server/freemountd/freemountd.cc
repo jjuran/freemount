@@ -79,7 +79,7 @@ static bool option_matches( const char*  option,
 
 #define OPTION_MATCHES( option, size, name )  option_matches( option, size, STR_LEN( name ) )
 
-static char** get_options( char** argv )
+static char* const* get_options( char* const* argv )
 {
 	if ( *argv == NULL )
 	{
@@ -169,9 +169,9 @@ static char** get_options( char** argv )
 	return argv;
 }
 
-int main( int argc, char** argv )
+int main( int argc, char* const* argv )
 {
-	char** params = get_options( argv );
+	char *const *args = get_options( argv );
 	
 	session s( STDOUT_FILENO, root(), root() );
 	
