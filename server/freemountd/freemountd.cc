@@ -57,10 +57,6 @@ static const vfs::node& root()
 }
 
 
-#define STR_LEN( s )  "" s, (sizeof s - 1)
-
-#define ARRAYLEN( array )  (sizeof array / sizeof array[0])
-
 static char* const* get_options( char* const* argv )
 {
 	++argv;  // skip arg 0
