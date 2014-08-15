@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 
 // Standard C
 #include <errno.h>
@@ -43,12 +44,14 @@ using namespace freemount;
 
 enum
 {
-	Option_clobber = 'C',
+	Option_clobber  = 'C',
+	Option_continue = 'c',  // resume downloads
 };
 
 static command::option options[] =
 {
-	{ "clobber", Option_clobber },
+	{ "clobber",  Option_clobber  },
+	{ "continue", Option_continue },
 	{ NULL }
 };
 
@@ -67,6 +70,7 @@ static uint64_t the_expected_size;
 static uint64_t n_written;
 
 static bool clobbering;
+static bool resume_downloads;
 static bool show_progress;
 static float the_divisor;
 
@@ -148,8 +152,10 @@ static const char* name_from_path( const char* path )
 
 static void open_file( const char* name )
 {
-	const int flags = clobbering ? O_WRONLY|O_CREAT
-	                             : O_WRONLY|O_CREAT|O_EXCL;
+	const bool reopening = clobbering || resume_downloads;
+	
+	const int flags = reopening ? O_WRONLY|O_CREAT
+	                            : O_WRONLY|O_CREAT|O_EXCL;
 	
 	output_fd = open( name, flags, 0666 );
 	
@@ -171,6 +177,30 @@ static void open_file( const char* name )
 			exit( 1 );
 		}
 	}
+	else if ( resume_downloads )
+	{
+		struct stat st;
+		
+		const int nok = fstat( output_fd, &st );
+		
+		if ( nok )
+		{
+			more::perror( "fget", name, errno );
+		
+			exit( 1 );
+		}
+		
+		const off_t mark = lseek( output_fd, st.st_size, SEEK_SET );
+		
+		if ( mark < 0 )
+		{
+			more::perror( "fget", name, errno );
+		
+			exit( 1 );
+		}
+		
+		n_written = mark;
+	}
 }
 
 static inline void queue_request( send_queue& queue, uint8_t request_type )
@@ -183,13 +213,18 @@ static inline void queue_submit( send_queue& queue )
 	queue_empty( queue, Frame_submit );
 }
 
-static void send_read_request( int fd, const char* path, uint32_t size )
+static void send_read_request( int fd, const char* path, uint32_t size, off_t offset )
 {
 	send_queue queue( fd );
 	
 	queue_request( queue, req_read );
 	
 	queue_string( queue, Frame_arg_path, path, size );
+	
+	if ( offset != 0 )
+	{
+		queue_int( queue, Frame_seek_offset, offset );
+	}
 	
 	queue_submit( queue );
 	
@@ -208,6 +243,10 @@ static char* const* get_options( char* const* argv )
 		{
 			case Option_clobber:
 				clobbering = true;
+				break;
+			
+			case Option_continue:
+				resume_downloads = true;
 				break;
 			
 			default:
@@ -260,7 +299,7 @@ int main( int argc, char** argv )
 	
 	open_file( name );
 	
-	send_read_request( protocol_out, the_path, strlen( the_path ) );
+	send_read_request( protocol_out, the_path, strlen( the_path ), n_written );
 	
 	data_receiver r( &frame_handler, NULL );
 	
