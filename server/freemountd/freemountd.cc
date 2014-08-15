@@ -150,7 +150,8 @@ static char* const* get_options( char* const* argv )
 			
 			if ( opt[0] == 'q' )
 			{
-				int dev_null = open( "/dev/null", O_WRONLY );
+				int dev_null;
+				dev_null = open( "/dev/null", O_WRONLY );
 				
 				dup2( dev_null, STDERR_FILENO );
 				
