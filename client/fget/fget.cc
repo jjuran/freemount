@@ -17,6 +17,9 @@
 // more-posix
 #include "more/perror.hh"
 
+// command
+#include "command/get_option.hh"
+
 // unet-connect
 #include "unet/connect.hh"
 
@@ -37,6 +40,18 @@
 using namespace freemount;
 
 
+enum
+{
+	Option_clobber = 'C',
+};
+
+static command::option options[] =
+{
+	{ "clobber", Option_clobber },
+	{ NULL }
+};
+
+
 static unet::connection_box the_connection;
 
 static int protocol_in  = -1;
@@ -50,6 +65,7 @@ static const char* the_path;
 static uint64_t the_expected_size;
 static uint64_t n_written;
 
+static bool clobbering;
 static bool show_progress;
 static float the_divisor;
 
@@ -131,7 +147,10 @@ static const char* name_from_path( const char* path )
 
 static void open_file( const char* name )
 {
-	output_fd = open( name, O_WRONLY|O_CREAT|O_EXCL, 0666 );
+	const int flags = clobbering ? O_WRONLY|O_CREAT
+	                             : O_WRONLY|O_CREAT|O_EXCL;
+	
+	output_fd = open( name, flags, 0666 );
 	
 	if ( output_fd < 0 )
 	{
@@ -139,7 +158,42 @@ static void open_file( const char* name )
 		
 		exit( 1 );
 	}
+	
+	if ( clobbering )
+	{
+		const int nok = ftruncate( output_fd, 0 );
+		
+		if ( nok )
+		{
+			more::perror( "fget", name, errno );
+		
+			exit( 1 );
+		}
+	}
 }
+
+static char* const* get_options( char* const* argv )
+{
+	++argv;  // skip arg 0
+	
+	short opt;
+	
+	while ( (opt = command::get_option( &argv, options )) )
+	{
+		switch ( opt )
+		{
+			case Option_clobber:
+				clobbering = true;
+				break;
+			
+			default:
+				abort();
+		}
+	}
+	
+	return argv;
+}
+
 
 int main( int argc, char** argv )
 {
@@ -148,7 +202,9 @@ int main( int argc, char** argv )
 		return 0;
 	}
 	
-	char* address = argv[ 1 ];
+	char *const *args = get_options( argv );
+	
+	char* address = args[ 0 ];
 	
 	const char** connector_argv = parse_address( address );
 	
