@@ -103,9 +103,11 @@ static void bad_usage( const char* text, size_t text_size, const char* arg )
 	};
 	
 	writev( STDERR_FILENO, iov, ARRAYLEN( iov ) );
+	
+	exit( 2 );
 }
 
-#define BAD_USAGE( text, arg )  (bad_usage( STR_LEN( text ": " ), arg ), (char**) NULL)
+#define BAD_USAGE( text, arg )  bad_usage( STR_LEN( text ": " ), arg )
 
 static char** get_options( int argc, char** argv )
 {
@@ -138,7 +140,7 @@ static char** get_options( int argc, char** argv )
 				
 				// no long options
 				
-				return BAD_USAGE( "Unknown option", arg );
+				BAD_USAGE( "Unknown option", arg );
 			}
 			
 			// short option
@@ -151,7 +153,7 @@ static char** get_options( int argc, char** argv )
 				
 				case '\0':  // "-" argument not recognized
 				default:
-					return BAD_USAGE( "Unknown option", arg );
+					BAD_USAGE( "Unknown option", arg );
 			}
 			
 			continue;
@@ -182,8 +184,6 @@ int main( int argc, char** argv )
 	if ( connector_argv == NULL )
 	{
 		BAD_USAGE( "Malformed address", address );
-		
-		return 2;
 	}
 	
 	the_connection = unet::connect( connector_argv );
