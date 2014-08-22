@@ -17,8 +17,6 @@ namespace freemount
 	
 	static const char* uexec_argv[] = { NULL, "uexec", "freemountd", "--root", ".", "-q", NULL };
 	
-	static const char* uloop_argv[] = { NULL, "uloop", NULL };
-	
 	static const char* ulocal_argv[] = { NULL, "ulocal", NULL, NULL };
 	
 	static const char* utcp_argv[] = { NULL, "utcp", NULL, "4564", NULL };
@@ -117,13 +115,13 @@ namespace freemount
 		
 		char* colon = p++;
 		
-		// ":" -> uloop
+		// ":"
 		
 		if ( colon == address )
 		{
 			if ( *p == '\0' )
 			{
-				return uloop_argv + 1;
+				// No semantics are defined for ":" at present
 			}
 			
 			return NULL;
