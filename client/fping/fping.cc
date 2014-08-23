@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// command
+#include "command/get_option.hh"
+
 // unet-connect
 #include "unet/connect.hh"
 
@@ -30,8 +33,20 @@
 #define ARRAYLEN( array )  (sizeof array / sizeof array[0])
 
 
+using namespace command::constants;
 using namespace freemount;
 
+
+enum
+{
+	Option_count = 'c',
+};
+
+static command::option options[] =
+{
+	{ "", Option_count, Param_required },
+	{ NULL }
+};
 
 static unet::connection_box the_connection;
 
@@ -109,58 +124,28 @@ static void bad_usage( const char* text, size_t text_size, const char* arg )
 
 #define BAD_USAGE( text, arg )  bad_usage( STR_LEN( text ": " ), arg )
 
-static char** get_options( int argc, char** argv )
+static char* const* get_options( char* const* argv )
 {
 	if ( *argv == NULL )
 	{
 		return argv;
 	}
 	
-	while ( const char* arg = *++argv )
+	++argv;  // skip arg 0
+	
+	short opt;
+	
+	while ( (opt = command::get_option( &argv, options )) )
 	{
-		if ( arg[0] == '-' )
+		switch ( opt )
 		{
-			if ( arg[1] == '\0' )
-			{
-				// An "-" argument is not an option and means /dev/fd/0
+			case Option_count:
+				count = atoi( command::global_result.param );
 				break;
-			}
 			
-			if ( arg[1] == '-' )
-			{
-				// long option or "--"
-				
-				const char* option = arg + 2;
-				
-				if ( *option == '\0' )
-				{
-					++argv;
-					break;
-				}
-				
-				// no long options
-				
-				BAD_USAGE( "Unknown option", arg );
-			}
-			
-			// short option
-			
-			switch ( arg[1] )
-			{
-				case 'c':
-					count = atoi( arg[2] ? arg + 2 : *++argv );
-					break;
-				
-				case '\0':  // "-" argument not recognized
-				default:
-					BAD_USAGE( "Unknown option", arg );
-			}
-			
-			continue;
+			default:
+				abort();
 		}
-		
-		// not an option
-		break;
 	}
 	
 	return argv;
@@ -168,16 +153,9 @@ static char** get_options( int argc, char** argv )
 
 int main( int argc, char** argv )
 {
-	char** params = get_options( argc, argv );
+	char* const* args = get_options( argv );
 	
-	if ( params == NULL )
-	{
-		return 2;
-	}
-	
-	const int n_params = argc - (params - argv);
-	
-	char* address = params[ 0 ];  // may be NULL
+	char* address = args[ 0 ];  // may be NULL
 	
 	const char** connector_argv = parse_address( address );
 	
