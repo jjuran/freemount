@@ -170,11 +170,6 @@ int main( int argc, char** argv )
 {
 	char** params = get_options( argc, argv );
 	
-	if ( params == NULL )
-	{
-		return 2;
-	}
-	
 	char* address = params[ 0 ];  // may be NULL
 	
 	const char** connector_argv = parse_address( address );
