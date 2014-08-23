@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// command
+#include "command/get_option.hh"
+
 // unet-connect
 #include "unet/connect.hh"
 
@@ -30,8 +33,20 @@
 #define ARRAYLEN( array )  (sizeof array / sizeof array[0])
 
 
+using namespace command::constants;
 using namespace freemount;
 
+
+enum
+{
+	Option_count = 'c',
+};
+
+static command::option options[] =
+{
+	{ "", Option_count, Param_required },
+	{ NULL }
+};
 
 static unet::connection_box the_connection;
 
@@ -116,51 +131,21 @@ static char* const* get_options( char* const* argv )
 		return argv;
 	}
 	
-	while ( const char* arg = *++argv )
+	++argv;  // skip arg 0
+	
+	short opt;
+	
+	while ( (opt = command::get_option( &argv, options )) )
 	{
-		if ( arg[0] == '-' )
+		switch ( opt )
 		{
-			if ( arg[1] == '\0' )
-			{
-				// An "-" argument is not an option and means /dev/fd/0
+			case Option_count:
+				count = atoi( command::global_result.param );
 				break;
-			}
 			
-			if ( arg[1] == '-' )
-			{
-				// long option or "--"
-				
-				const char* option = arg + 2;
-				
-				if ( *option == '\0' )
-				{
-					++argv;
-					break;
-				}
-				
-				// no long options
-				
-				BAD_USAGE( "Unknown option", arg );
-			}
-			
-			// short option
-			
-			switch ( arg[1] )
-			{
-				case 'c':
-					count = atoi( arg[2] ? arg + 2 : *++argv );
-					break;
-				
-				case '\0':  // "-" argument not recognized
-				default:
-					BAD_USAGE( "Unknown option", arg );
-			}
-			
-			continue;
+			default:
+				abort();
 		}
-		
-		// not an option
-		break;
 	}
 	
 	return argv;
