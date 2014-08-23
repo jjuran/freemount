@@ -7,13 +7,12 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include <sys/uio.h>
 
 // Standard C
 #include <stdlib.h>
-#include <string.h>
 
 // command
+#include "command/errors.hh"
 #include "command/get_option.hh"
 
 // unet-connect
@@ -29,8 +28,6 @@
 
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
-
-#define ARRAYLEN( array )  (sizeof array / sizeof array[0])
 
 
 using namespace command::constants;
@@ -108,21 +105,7 @@ static void* pinger_start( void* arg )
 	return NULL;
 }
 
-static void bad_usage( const char* text, size_t text_size, const char* arg )
-{
-	const iovec iov[] =
-	{
-		{ (void*) text, text_size    },
-		{ (void*) arg, strlen( arg ) },
-		{ (void*) STR_LEN( "\n" )    },
-	};
-	
-	writev( STDERR_FILENO, iov, ARRAYLEN( iov ) );
-	
-	exit( 2 );
-}
-
-#define BAD_USAGE( text, arg )  bad_usage( STR_LEN( text ": " ), arg )
+#define BAD_USAGE( text, arg )  command::usage( STR_LEN( text ": " ), arg )
 
 static char* const* get_options( char* const* argv )
 {
