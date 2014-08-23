@@ -175,8 +175,6 @@ int main( int argc, char** argv )
 		return 2;
 	}
 	
-	const int n_params = argc - (params - argv);
-	
 	char* address = params[ 0 ];  // may be NULL
 	
 	const char** connector_argv = parse_address( address );
