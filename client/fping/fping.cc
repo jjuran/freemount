@@ -109,7 +109,7 @@ static void bad_usage( const char* text, size_t text_size, const char* arg )
 
 #define BAD_USAGE( text, arg )  bad_usage( STR_LEN( text ": " ), arg )
 
-static char* const* get_options( int argc, char* const* argv )
+static char* const* get_options( char* const* argv )
 {
 	if ( *argv == NULL )
 	{
@@ -168,7 +168,7 @@ static char* const* get_options( int argc, char* const* argv )
 
 int main( int argc, char** argv )
 {
-	char* const* args = get_options( argc, argv );
+	char* const* args = get_options( argv );
 	
 	char* address = args[ 0 ];  // may be NULL
 	
