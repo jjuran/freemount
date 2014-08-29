@@ -96,11 +96,13 @@ namespace freemount
 		
 		while ( *p != ':' )
 		{
+			// plain path -> uexec
+			
 			if ( *p == '\0'  ||  *p == '/' )
 			{
-				ulocal_argv[ 2 ] = address;  // pathname
+				uexec_argv[ 4 ] = address;  // pathname
 				
-				return ulocal_argv + 1;
+				return uexec_argv + 1;
 			}
 			
 			++p;
