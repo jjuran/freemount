@@ -50,6 +50,13 @@ namespace freemount
 		return utcp_argv + 1;
 	}
 	
+	static const char** parse_unix_path( const char* path )
+	{
+		ulocal_argv[ 2 ] = path;
+		
+		return ulocal_argv + 1;
+	}
+	
 	static const char** parse_ssh_path( char* path )
 	{
 		if ( path[ 0 ] != '\0' )
@@ -113,6 +120,11 @@ namespace freemount
 			if ( memcmp( address, STR_LEN( "mnt:" ) ) == 0 )
 			{
 				return parse_mnt_hostpath( p );
+			}
+			
+			if ( memcmp( address, STR_LEN( "unix:" ) ) == 0 )
+			{
+				return parse_unix_path( p );
 			}
 			
 			// unrecognized URI scheme
