@@ -15,6 +15,8 @@
 namespace freemount
 {
 	
+	static const char* uexec_argv[] = { NULL, "uexec", "freemountd", "--root", ".", "-q", NULL };
+	
 	static const char* uloop_argv[] = { NULL, "uloop", NULL };
 	
 	static const char* ulocal_argv[] = { NULL, "ulocal", NULL, NULL };
@@ -55,6 +57,13 @@ namespace freemount
 		ulocal_argv[ 2 ] = path;
 		
 		return ulocal_argv + 1;
+	}
+	
+	static const char** parse_exec_path( const char* path )
+	{
+		uexec_argv[ 2 ] = path;
+		
+		return uexec_argv + 1;
 	}
 	
 	static const char** parse_ssh_path( char* path )
@@ -129,6 +138,13 @@ namespace freemount
 			if ( memcmp( address, STR_LEN( "unix:" ) ) == 0 )
 			{
 				return parse_unix_path( p );
+			}
+			
+			// "exec://path..." -> uexec
+			
+			if ( memcmp( address, STR_LEN( "exec:" ) ) == 0 )
+			{
+				return parse_exec_path( p );
 			}
 			
 			// unrecognized URI scheme
