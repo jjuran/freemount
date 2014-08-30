@@ -70,12 +70,7 @@ static int frame_handler( void* that, const frame_header& frame )
 
 int main( int argc, char** argv )
 {
-	if ( argc <= 1  ||  argv[1][0] == '\0' )
-	{
-		return 0;
-	}
-	
-	char* address = argv[ 1 ];
+	char* address = argv[ argc > 0 ];
 	
 	const char** connector_argv = parse_address( address );
 	
