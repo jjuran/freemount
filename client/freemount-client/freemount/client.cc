@@ -111,16 +111,20 @@ namespace freemount
 			return NULL;
 		}
 		
-		// "mnt://host..." -> utcp
+		// "scheme://..."
 		
 		if ( p[ 0 ] == '/'  &&  p[ 1 ] == '/' )
 		{
 			p += 2;
 			
+			// "mnt://host..." -> utcp
+			
 			if ( memcmp( address, STR_LEN( "mnt:" ) ) == 0 )
 			{
 				return parse_mnt_hostpath( p );
 			}
+			
+			// "unix://path..." -> ulocal
 			
 			if ( memcmp( address, STR_LEN( "unix:" ) ) == 0 )
 			{
