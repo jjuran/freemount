@@ -96,6 +96,11 @@ namespace freemount
 		
 		char* p = address;
 		
+		if ( *p == '\0' )
+		{
+			return NULL;
+		}
+		
 		while ( *p != ':' )
 		{
 			// plain path -> uexec
