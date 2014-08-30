@@ -87,9 +87,11 @@ namespace freemount
 	
 	const char** parse_address( char* address )
 	{
+		// null -> uexec
+		
 		if ( address == NULL )
 		{
-			return uloop_argv + 1;
+			return uexec_argv + 1;
 		}
 		
 		char* p = address;
