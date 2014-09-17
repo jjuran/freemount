@@ -15,6 +15,8 @@
 namespace freemount
 {
 	
+	static const char* null_argv[] = { NULL, NULL };
+	
 	static const char* uexec_argv[] = { NULL, "uexec", "freemountd", "--root", ".", "-q", NULL };
 	
 	static const char* ulocal_argv[] = { NULL, "ulocal", NULL, NULL };
@@ -119,9 +121,11 @@ namespace freemount
 		
 		if ( colon == address )
 		{
+			// ":" -> null (stdio)
+			
 			if ( *p == '\0' )
 			{
-				// No semantics are defined for ":" at present
+				return null_argv + 1;
 			}
 			
 			return NULL;
