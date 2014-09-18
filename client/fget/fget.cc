@@ -26,12 +26,13 @@
 // freemount
 #include "freemount/event_loop.hh"
 #include "freemount/frame_size.hh"
+#include "freemount/queue_utils.hh"
 #include "freemount/receiver.hh"
+#include "freemount/send_queue.hh"
 #include "freemount/write_in_full.hh"
 
 // freemount-client
 #include "freemount/client.hh"
-#include "freemount/requests.hh"
 
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
@@ -170,6 +171,29 @@ static void open_file( const char* name )
 			exit( 1 );
 		}
 	}
+}
+
+static inline void queue_request( send_queue& queue, uint8_t request_type )
+{
+	queue_int( queue, Frame_request, request_type );
+}
+
+static inline void queue_submit( send_queue& queue )
+{
+	queue_empty( queue, Frame_submit );
+}
+
+static void send_read_request( int fd, const char* path, uint32_t size )
+{
+	send_queue queue( fd );
+	
+	queue_request( queue, req_read );
+	
+	queue_string( queue, Frame_arg_path, path, size );
+	
+	queue_submit( queue );
+	
+	queue.flush();
 }
 
 static char* const* get_options( char* const* argv )
