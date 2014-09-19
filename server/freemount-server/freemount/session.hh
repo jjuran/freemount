@@ -10,6 +10,9 @@
 #include "vfs/node.hh"
 #include "vfs/node_ptr.hh"
 
+// freemount
+#include "freemount/send_queue.hh"
+
 
 namespace freemount
 {
@@ -77,6 +80,8 @@ namespace freemount
 			vfs::node_ptr its_root;
 			vfs::node_ptr its_cwd;
 			
+			send_queue its_queue;
+			
 			// non-copyable
 			session           ( const session& );
 			session& operator=( const session& );
@@ -89,6 +94,7 @@ namespace freemount
 			:
 				its_root( &root ),
 				its_cwd( &cwd ),
+				its_queue( send_fd ),
 				send_fd( send_fd )
 			{
 			}
@@ -97,6 +103,8 @@ namespace freemount
 			
 			const vfs::node& root() const  { return *its_root; }
 			const vfs::node& cwd () const  { return *its_cwd;  }
+			
+			send_queue& queue()  { return its_queue; }
 			
 			request* get_request( int i ) const
 			{
