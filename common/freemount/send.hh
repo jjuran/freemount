@@ -13,7 +13,7 @@
 namespace freemount
 {
 	
-	void send_empty_frame( int fd, uint8_t type, uint8_t r_id = 0 );
+	void send_empty_frame( int fd, uint8_t type );
 	
 }
 
