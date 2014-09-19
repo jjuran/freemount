@@ -31,9 +31,9 @@
 
 // freemount
 #include "freemount/frame_size.hh"
+#include "freemount/queue_utils.hh"
 #include "freemount/request.hh"
 #include "freemount/session.hh"
-#include "freemount/send.hh"
 
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
@@ -63,16 +63,16 @@ static int stat( session& s, uint8_t r_id, const request& r )
 	
 	const mode_t mode = sb.st_mode;
 	
-	send_u32_frame( s.send_fd, Frame_stat_mode, mode, r_id );
+	queue_int( s.queue(), Frame_stat_mode, mode, r_id );
 	
 	if ( S_ISDIR( mode )  &&  sb.st_nlink > 1 )
 	{
-		send_u32_frame( s.send_fd, Frame_stat_nlink, sb.st_nlink, r_id );
+		queue_int( s.queue(), Frame_stat_nlink, sb.st_nlink, r_id );
 	}
 	
 	if ( S_ISREG( mode ) )
 	{
-		send_u64_frame( s.send_fd, Frame_stat_size, sb.st_size, r_id );
+		queue_int( s.queue(), Frame_stat_size, sb.st_size, r_id );
 	}
 	
 	return 0;
@@ -101,7 +101,7 @@ static int list( session& s, uint8_t r_id, const request& r )
 		
 		const plus::string& name = entry.name;
 		
-		send_string_frame( s.send_fd, Frame_dentry_name, name.data(), name.size(), r_id );
+		queue_string( s.queue(), Frame_dentry_name, name.data(), name.size(), r_id );
 	}
 	
 	return 0;
@@ -123,7 +123,7 @@ static int read( session& s, uint8_t r_id, const request& r )
 		{
 			const uint64_t size = geteof( *file );
 			
-			send_u64_frame( s.send_fd, Frame_stat_size, size, r_id );
+			queue_int( s.queue(), Frame_stat_size, size, r_id );
 		}
 	}
 	catch ( const p7::errno_t& err )
@@ -180,26 +180,28 @@ static int read( session& s, uint8_t r_id, const request& r )
 			n_requested -= n_read;
 		}
 		
-		send_string_frame( s.send_fd, Frame_recv_data, buffer, n_read, r_id );
+		queue_string( s.queue(), Frame_recv_data, buffer, n_read, r_id );
 	}
 	
 	return 0;
 }
 
-static void send_response( int fd, int result, uint8_t r_id )
+static void send_response( send_queue& queue, int result, uint8_t r_id )
 {
 	if ( result >= 0 )
 	{
-		write( STDERR_FILENO, STR_LEN( " ok\n" ) );
+		result = 0;
 		
-		send_empty_frame( fd, Frame_result, r_id );
+		write( STDERR_FILENO, STR_LEN( " ok\n" ) );
 	}
 	else
 	{
 		write( STDERR_FILENO, STR_LEN( " err\n" ) );
-		
-		send_u32_frame( fd, Frame_result, -result, r_id );
 	}
+	
+	queue_int( queue, Frame_result, -result, r_id );
+	
+	queue.flush();
 }
 
 int frame_handler( void* that, const frame_header& frame )
@@ -210,7 +212,9 @@ int frame_handler( void* that, const frame_header& frame )
 	{
 		write( STDERR_FILENO, STR_LEN( "ping\n" ) );
 		
-		send_empty_frame( s.send_fd, Frame_pong );
+		queue_empty( s.queue(), Frame_pong );
+		
+		s.queue().flush();
 		
 		return 0;
 	}
@@ -317,7 +321,7 @@ int frame_handler( void* that, const frame_header& frame )
 			
 			s.set_request( request_id, NULL );
 			
-			send_response( s.send_fd, err, request_id );
+			send_response( s.queue(), err, request_id );
 			break;
 		
 		default:
