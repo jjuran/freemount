@@ -13,25 +13,25 @@
 namespace freemount
 {
 	
-	static inline void queue_request( send_queue& queue, uint8_t request_type )
+	static inline void queue_request( send_queue& queue, uint8_t request_type, uint8_t r_id )
 	{
-		queue_int( queue, Frame_request, request_type );
+		queue_int( queue, Frame_request, request_type, r_id );
 	}
 	
-	static inline void queue_submit( send_queue& queue )
+	static inline void queue_submit( send_queue& queue, uint8_t r_id )
 	{
-		queue_empty( queue, Frame_submit );
+		queue_empty( queue, Frame_submit, r_id );
 	}
 	
 	void send_path_request( int fd, const char* path, uint32_t size, uint8_t r_type, uint8_t r_id )
 	{
 		send_queue queue( fd );
 		
-		queue_request( queue, r_type );
+		queue_request( queue, r_type, r_id );
 		
-		queue_string( queue, Frame_arg_path, path, size );
+		queue_string( queue, Frame_arg_path, path, size, r_id );
 		
-		queue_submit( queue );
+		queue_submit( queue, r_id );
 		
 		queue.flush();
 	}
