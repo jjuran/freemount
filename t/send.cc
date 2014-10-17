@@ -22,8 +22,6 @@ static const unsigned n_tests = 2;
 
 using freemount::send_empty_frame;
 
-using tap::ok_if;
-
 
 static void send_empty()
 {
@@ -35,9 +33,9 @@ static void send_empty()
 	
 	char buffer[ 9 ];
 	
-	ok_if( read( fds[0], buffer, 9 ) == 8 );
+	EXPECT( read( fds[0], buffer, 9 ) == 8 );
 	
-	ok_if( memcmp( buffer, "\0\0\0\0\0\0\x2B\0", 8 ) == 0 );
+	EXPECT( memcmp( buffer, "\0\0\0\0\0\0\x2B\0", 8 ) == 0 );
 	
 	close( fds[0] );
 	close( fds[1] );

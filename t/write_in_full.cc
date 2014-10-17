@@ -23,8 +23,6 @@ static const unsigned n_tests = 3 + 3 * 8;
 using freemount::write_in_full;
 using freemount::failed_write;
 
-using tap::ok_if;
-
 
 static sig_atomic_t caught_sigalrm;
 static sig_atomic_t caught_sigpipe;
@@ -111,11 +109,11 @@ static void multi_write()
 	
 	check_read( fds[0] );
 	
-	ok_if( last_i > 0 );
+	EXPECT( last_i > 0 );
 	
-	ok_if( data_read_matches_written );
+	EXPECT( data_read_matches_written );
 	
-	ok_if( !exception_caught );
+	EXPECT( !exception_caught );
 	
 	::operator delete( read_buffer );
 	
@@ -185,11 +183,11 @@ static void pipe_buffer_overrun( size_t buffer_size, bool nonblocking, bool clos
 	
 	alarm( 0 );
 	
-	ok_if( caught_sigalrm == 2 );
+	EXPECT( caught_sigalrm == 2 );
 	
-	ok_if( caught_sigpipe == !closing_writer );
+	EXPECT( caught_sigpipe == !closing_writer );
 	
-	ok_if( errnum == (closing_writer ? EBADF : EPIPE) );
+	EXPECT( errnum == (closing_writer ? EBADF : EPIPE) );
 	
 	close( fds[0] );
 	close( fds[1] );

@@ -27,8 +27,6 @@ static const unsigned n_tests = 4;
 
 using namespace freemount;
 
-using tap::ok_if;
-
 
 static int n_pongs;
 
@@ -103,13 +101,13 @@ static void ping_pong( const char* argv0 )
 	
 	int status = client( fds[0] );
 	
-	ok_if( status == 0 );
+	EXPECT( status == 0 );
 	
-	ok_if( wait( &status ) == pid );
+	EXPECT( wait( &status ) == pid );
 	
-	ok_if( status == 0 );
+	EXPECT( status == 0 );
 	
-	ok_if( n_pongs == 3 );
+	EXPECT( n_pongs == 3 );
 	
 	close( fds[0] );
 }
