@@ -47,6 +47,10 @@ namespace freemount
 	{
 		// control frames
 		
+		Frame_fatal = 0xFF,  // fatal error on my end, goodbye
+		Frame_error = 0xFE,  // protocol error on your end, goodbye
+		Frame_debug = 0xFD,  // debug message, no semantics
+		
 		Frame_ping = 0xF1,
 		Frame_pong = 0xF0,
 		

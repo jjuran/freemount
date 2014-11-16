@@ -214,6 +214,30 @@ static plus::string string_from_frame( const frame_header& frame )
 
 static int frame_handler( void* that, const frame_header& frame )
 {
+	switch ( frame.type )
+	{
+		case Frame_fatal:
+			write( STDERR_FILENO, STR_LEN( "[FATAL]: " ) );
+			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, STR_LEN( "\n" ) );
+			return 0;
+		
+		case Frame_error:
+			write( STDERR_FILENO, STR_LEN( "[ERROR]: " ) );
+			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, STR_LEN( "\n" ) );
+			return 0;
+		
+		case Frame_debug:
+			write( STDERR_FILENO, STR_LEN( "[DEBUG]: " ) );
+			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, STR_LEN( "\n" ) );
+			return 0;
+		
+		default:
+			break;
+	}
+	
 	const uint8_t request_id = frame.r_id;
 	
 	typedef std::map< uint8_t, stat_response >::iterator Iter;

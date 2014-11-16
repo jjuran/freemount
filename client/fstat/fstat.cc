@@ -23,6 +23,7 @@
 
 // freemount
 #include "freemount/event_loop.hh"
+#include "freemount/frame_size.hh"
 #include "freemount/receiver.hh"
 
 // freemount-client
@@ -114,6 +115,24 @@ static int frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{
+		case Frame_fatal:
+			write( STDERR_FILENO, STR_LEN( "[FATAL]: " ) );
+			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, STR_LEN( "\n" ) );
+			return 0;
+		
+		case Frame_error:
+			write( STDERR_FILENO, STR_LEN( "[ERROR]: " ) );
+			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, STR_LEN( "\n" ) );
+			return 0;
+		
+		case Frame_debug:
+			write( STDERR_FILENO, STR_LEN( "[DEBUG]: " ) );
+			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, STR_LEN( "\n" ) );
+			return 0;
+		
 		case Frame_stat_mode:
 			print_mode( get_u32( frame ) );
 			break;
