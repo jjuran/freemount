@@ -35,7 +35,7 @@ static void send_empty()
 	
 	EXPECT( read( fds[0], buffer, 9 ) == 8 );
 	
-	EXPECT( memcmp( buffer, "\0\0\0\0\0\0\x2B\0", 8 ) == 0 );
+	EXPECT( memcmp( buffer, "\0\x2B\0\0\0\0\0\0", 8 ) == 0 );
 	
 	close( fds[0] );
 	close( fds[1] );
