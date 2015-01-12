@@ -70,15 +70,18 @@ namespace freemount
 	{
 		if ( path[ 0 ] != '\0' )
 		{
-			ussh_argv[ 7 ] = path;
-			
 			char* slashes = strstr( path, "//" );
 			
-			if ( slashes != NULL )
+			if ( slashes == NULL )
+			{
+				ussh_argv[ 0 ] = path;
+			}
+			else
 			{
 				*slashes++ = '\0';
 				
 				ussh_argv[ 0 ] = slashes;
+				ussh_argv[ 7 ] = path;
 			}
 		}
 		
