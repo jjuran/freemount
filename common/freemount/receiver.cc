@@ -49,15 +49,6 @@ namespace freemount
 				break;
 			}
 			
-			// Propagate type byte to old and new locations
-			
-			char* q = (char*) p;
-			
-			const uint8_t type = q[ 1 ] | q[ 6 ];
-			
-			q[ 1 ] = type;
-			q[ 6 ] = type;
-			
 			const int status = its_handler( its_context, h );
 			
 			if ( status != 0 )
