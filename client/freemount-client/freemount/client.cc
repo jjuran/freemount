@@ -17,13 +17,13 @@ namespace freemount
 	
 	static const char* null_argv[] = { NULL, NULL };
 	
-	static const char* uexec_argv[] = { NULL, "uexec", "freemountd", "--root", ".", "-q", NULL };
+	static const char* uexec_argv[] = { NULL, "uexec", "freemountd", "--root", ".", "-qu", NULL };
 	
 	static const char* ulocal_argv[] = { NULL, "ulocal", NULL, NULL };
 	
 	static const char* utcp_argv[] = { NULL, "utcp", NULL, "4564", NULL };
 	
-	static const char* ussh_argv[] = { NULL, "ussh", "--", NULL, "bin/freemountd", "-q", "--root", ".", NULL };
+	static const char* ussh_argv[] = { NULL, "ussh", "--", NULL, "bin/freemountd", "-qu", "--root", ".", NULL };
 	
 	
 	static const char** parse_mnt_hostpath( char* hostpath )
