@@ -197,10 +197,10 @@ static int write( session& s, uint8_t r_id, const request& r )
 		{
 			vfs::node_ptr that = vfs::resolve_pathname( s.root(), r.path, s.cwd() );
 			
-			int open_flags = r.offset < 0 ? O_WRONLY | O_TRUNC
+			int open_flags = r.offset < 0 ? O_WRONLY | O_CREAT | O_TRUNC
 			                              : O_WRONLY;
 			
-			file = open( *that, open_flags, 0 );
+			file = open( *that, open_flags, 0666 );
 		}
 		else
 		{
