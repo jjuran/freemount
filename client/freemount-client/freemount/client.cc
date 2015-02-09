@@ -110,7 +110,7 @@ namespace freemount
 			
 			if ( *p == '\0'  ||  *p == '/' )
 			{
-				uexec_argv[ 4 ] = address;  // pathname
+				uexec_argv[ 0 ] = address;  // pathname
 				
 				return uexec_argv + 1;
 			}
