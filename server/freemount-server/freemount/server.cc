@@ -46,13 +46,11 @@ namespace p7 = poseven;
 
 static int stat( session& s, uint8_t r_id, const request& r )
 {
-	const char* path = r.path.c_str();
-	
 	struct stat sb;
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), r.path, s.cwd() );
 		
 		stat( *that, sb );
 	}
@@ -80,13 +78,11 @@ static int stat( session& s, uint8_t r_id, const request& r )
 
 static int list( session& s, uint8_t r_id, const request& r )
 {
-	const char* path = r.path.c_str();
-	
 	vfs::dir_contents contents;
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), r.path, s.cwd() );
 		
 		listdir( *that, contents );
 	}
@@ -109,13 +105,11 @@ static int list( session& s, uint8_t r_id, const request& r )
 
 static int read( session& s, uint8_t r_id, const request& r )
 {
-	const char* path = r.path.c_str();
-	
 	vfs::filehandle_ptr file;
 	
 	try
 	{
-		vfs::node_ptr that = vfs::resolve_pathname( s.root(), path, s.cwd() );
+		vfs::node_ptr that = vfs::resolve_pathname( s.root(), r.path, s.cwd() );
 		
 		file = open( *that, O_RDONLY, 0 );
 		
