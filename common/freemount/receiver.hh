@@ -21,6 +21,8 @@ namespace freemount
 	class data_receiver
 	{
 		private:
+			typedef plus::string::size_type size_t;
+			
 			plus::var_string  its_buffer;
 			
 			frame_handler_function  its_handler;
@@ -29,7 +31,7 @@ namespace freemount
 		public:
 			data_receiver( frame_handler_function handler, void* context );
 			
-			int recv_bytes( const char* buffer, std::size_t n );
+			int recv_bytes( const char* buffer, size_t n );
 	};
 	
 }

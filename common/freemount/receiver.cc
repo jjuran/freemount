@@ -12,6 +12,9 @@
 namespace freemount
 {
 	
+	typedef plus::string::size_type size_t;
+	
+	
 	data_receiver::data_receiver( frame_handler_function handler, void* context )
 	:
 		its_handler( handler ),
@@ -26,7 +29,7 @@ namespace freemount
 		return (value + mask) & ~mask;
 	}
 	
-	int data_receiver::recv_bytes( const char* buffer, std::size_t n )
+	int data_receiver::recv_bytes( const char* buffer, size_t n )
 	{
 		its_buffer.append( buffer, n );
 		
