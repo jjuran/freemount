@@ -70,6 +70,15 @@ namespace freemount
 	{
 		if ( path[ 0 ] != '\0' )
 		{
+			if ( char* bang = strchr( path, '!' ) )
+			{
+				*bang++ = '\0';
+				
+				ussh_argv[ 4 ] = path;  // path to server binary
+				
+				path = bang;
+			}
+			
 			char* slashes = strstr( path, "//" );
 			
 			if ( slashes == NULL )
