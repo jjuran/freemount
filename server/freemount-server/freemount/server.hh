@@ -6,9 +6,6 @@
 #ifndef FREEMOUNT_SERVER_HH
 #define FREEMOUNT_SERVER_HH
 
-// vfs
-#include "vfs/node_fwd.hh"
-
 
 namespace freemount
 {
