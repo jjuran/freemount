@@ -51,6 +51,9 @@ namespace freemount
 		Frame_error = 0xFE,  // protocol error on your end, goodbye
 		Frame_debug = 0xFD,  // debug message, no semantics
 		
+		Frame_ack_write = 0xF4,  // server acks client request data
+		Frame_ack_read  = 0xF3,  // client acks server response data
+		
 		Frame_ping = 0xF1,
 		Frame_pong = 0xF0,
 		
