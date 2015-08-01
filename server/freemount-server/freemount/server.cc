@@ -281,6 +281,11 @@ int frame_handler( void* that, const frame_header& frame )
 		return 0;
 	}
 	
+	if ( frame.type == Frame_ack_read )
+	{
+		return 0;
+	}
+	
 	const uint8_t request_id = frame.r_id;
 	
 	request* req = s.get_request( request_id );
