@@ -101,6 +101,11 @@ static int wait_for_result( int fd, frame_handler_function handler, const char* 
 
 static int frame_handler( void* that, const frame_header& frame )
 {
+	if ( frame.type == Frame_ack_write )
+	{
+		return 0;
+	}
+	
 	int result = ((request_status*) that)->result = get_u32( frame );
 	
 	if ( frame.type == Frame_result )
