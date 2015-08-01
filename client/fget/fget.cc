@@ -29,6 +29,7 @@
 #include "freemount/frame_size.hh"
 #include "freemount/queue_utils.hh"
 #include "freemount/receiver.hh"
+#include "freemount/send_ack.hh"
 #include "freemount/send_queue.hh"
 #include "freemount/write_in_full.hh"
 
@@ -131,6 +132,8 @@ static int frame_handler( void* that, const frame_header& frame )
 			size = get_size( frame );
 			
 			n_written += size;
+			
+			send_read_ack( protocol_out, size );
 			
 			update_progress();
 			
