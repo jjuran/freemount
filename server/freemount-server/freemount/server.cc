@@ -38,6 +38,7 @@
 #include "freemount/response.hh"
 #include "freemount/send_lock.hh"
 #include "freemount/session.hh"
+#include "freemount/task.hh"
 
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
@@ -236,9 +237,18 @@ static int write( session& s, uint8_t r_id, const request& r )
 	return 0;
 }
 
+static int start_read( session& s, uint8_t r_id, const request& r )
+{
+	begin_task( &read, s, r_id );
+	
+	return 1;
+}
+
 int frame_handler( void* that, const frame_header& frame )
 {
 	session& s = *(session*) that;
+	
+	check_tasks();
 	
 	switch ( frame.type )
 	{
@@ -386,7 +396,12 @@ int frame_handler( void* that, const frame_header& frame )
 					break;
 				
 				case req_read:
-					err = read( s, request_id, r );
+					err = start_read( s, request_id, r );
+					
+					if ( err > 0 )
+					{
+						return 0;  // in progress
+					}
 					break;
 				
 				case req_write:
