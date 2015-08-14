@@ -19,7 +19,7 @@ namespace freemount
 	
 	static const char* uexec_argv[] = { NULL, "uexec", "freemountd", "--root", ".", "-qu", NULL };
 	
-	static const char* ulocal_argv[] = { NULL, "ulocal", NULL, NULL };
+	static const char* uunix_argv[] = { NULL, "uunix", NULL, NULL };
 	
 	static const char* utcp_argv[] = { NULL, "utcp", NULL, "4564", NULL };
 	
@@ -54,9 +54,9 @@ namespace freemount
 	
 	static const char** parse_unix_path( const char* path )
 	{
-		ulocal_argv[ 2 ] = path;
+		uunix_argv[ 2 ] = path;
 		
-		return ulocal_argv + 1;
+		return uunix_argv + 1;
 	}
 	
 	static const char** parse_exec_path( const char* path )
@@ -156,7 +156,7 @@ namespace freemount
 				return parse_mnt_hostpath( p );
 			}
 			
-			// "unix://path..." -> ulocal
+			// "unix://path..." -> uunix
 			
 			if ( memcmp( address, STR_LEN( "unix:" ) ) == 0 )
 			{
