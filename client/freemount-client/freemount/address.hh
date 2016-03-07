@@ -1,10 +1,10 @@
 /*
-	freemount/client.hh
-	-------------------
+	freemount/address.hh
+	--------------------
 */
 
-#ifndef FREEMOUNT_CLIENT_HH
-#define FREEMOUNT_CLIENT_HH
+#ifndef FREEMOUNT_ADDRESS_HH
+#define FREEMOUNT_ADDRESS_HH
 
 
 namespace freemount

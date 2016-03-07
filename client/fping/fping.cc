@@ -25,7 +25,7 @@
 #include "freemount/send.hh"
 
 // freemount-client
-#include "freemount/client.hh"
+#include "freemount/address.hh"
 
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)

@@ -23,7 +23,7 @@
 #include "freemount/send_queue.hh"
 
 // freemount-client
-#include "freemount/client.hh"
+#include "freemount/address.hh"
 
 
 using namespace freemount;

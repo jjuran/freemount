@@ -23,7 +23,7 @@
 #include "freemount/receiver.hh"
 
 // freemount-client
-#include "freemount/client.hh"
+#include "freemount/address.hh"
 #include "freemount/requests.hh"
 
 

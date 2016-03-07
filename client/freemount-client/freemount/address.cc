@@ -1,9 +1,9 @@
 /*
-	freemount/client.cc
-	-------------------
+	freemount/address.cc
+	--------------------
 */
 
-#include "freemount/client.hh"
+#include "freemount/address.hh"
 
 // Standard C
 #include <string.h>
