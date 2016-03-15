@@ -180,6 +180,8 @@ static int read( session& s, uint8_t r_id, const request& r )
 		}
 		
 		queue_string( s.queue(), Frame_recv_data, buffer, n_read, r_id );
+		
+		s.queue().flush();
 	}
 	
 	return 0;
