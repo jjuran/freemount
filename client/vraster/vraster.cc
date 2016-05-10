@@ -24,6 +24,9 @@
 // jack
 #include "jack/interface.hh"
 
+// raster
+#include "raster/load.hh"
+
 // unet-connect
 #include "unet/connect.hh"
 
@@ -42,7 +45,9 @@
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
 #define USAGE  "usage: " "GUI=<gui-path> " PROGRAM " <screen-path>\n" \
-"       where gui-path is a FORGE jack and screen-path is a 21888-byte file\n"
+"       where gui-path is a FORGE jack and screen-path is a raster file\n"
+
+#define NOT_BLACK_ON_WHITE  "only black-on-white rasters are supported"
 
 
 namespace p7 = poseven;
@@ -72,9 +77,7 @@ static int next_fd = 3;
 
 static int screen_fd;
 
-const size_t buffer_size = 21888;  // 512 * 342 / 8
-
-static char screen_buffer[ buffer_size ];
+static raster::raster_load loaded_raster;
 
 
 #define OPEN( path )  \
@@ -107,16 +110,14 @@ void open_screen( const char* path )
 		
 		exit( 1 );
 	}
-}
-
-static
-void read_screen()
-{
-	ssize_t n_read = pread( screen_fd, screen_buffer, buffer_size, 0 );
 	
-	if ( n_read < 0 )
+	using namespace raster;
+	
+	loaded_raster = load_raster( screen_fd );
+	
+	if ( loaded_raster.addr == NULL )
 	{
-		report_error( "<screen>", errno );
+		report_error( path, errno );
 		
 		exit( 1 );
 	}
@@ -181,7 +182,6 @@ int main( int argc, char** argv )
 	const char* screen_path = args[ 0 ];
 	
 	open_screen( screen_path );
-	read_screen();
 	
 	unet::connection_box the_connection;
 	
@@ -199,8 +199,26 @@ int main( int argc, char** argv )
 	protocol_in  = the_connection.get_input ();
 	protocol_out = the_connection.get_output();
 	
-	short raster_size[ 2 ] = { 342, 512 };
-	short window_size[ 2 ] = { 342, 512 };
+	const raster::raster_desc& desc = loaded_raster.meta->desc;
+	
+	if ( desc.weight != 1 )
+	{
+		write( STDERR_FILENO, STR_LEN( PROGRAM ": " NOT_BLACK_ON_WHITE "\n" ) );
+		return 1;
+	}
+	
+	if ( desc.model != raster::Model_grayscale_paint )
+	{
+		write( STDERR_FILENO, STR_LEN( PROGRAM ": " NOT_BLACK_ON_WHITE "\n" ) );
+		return 1;
+	}
+	
+	const char* base = (char*) loaded_raster.addr;
+	
+	const size_t image_size = desc.height * desc.stride;
+	
+	short raster_size[ 2 ] = { desc.height, desc.width };
+	short window_size[ 2 ] = { desc.height, desc.width };
 	
 	if ( magnification > 1  && magnification <= 16 )
 	{
@@ -219,7 +237,7 @@ int main( int argc, char** argv )
 		PUT( PORT "/.~size",   (const char*) window_size, sizeof window_size );
 		PUT( PORT "/v/.~size", (const char*) raster_size, sizeof raster_size );
 		
-		PUT_DATA( PORT "/v/bits", screen_buffer, buffer_size );
+		PUT_DATA( PORT "/v/data", base, image_size );
 		
 		int window_fd = OPEN( PORT "/window" );
 	}
