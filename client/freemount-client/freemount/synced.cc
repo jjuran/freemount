@@ -16,6 +16,7 @@
 #include "freemount/frame_size.hh"
 #include "freemount/receiver.hh"
 #include "freemount/requests.hh"
+#include "freemount/send_ack.hh"
 
 
 namespace freemount
@@ -23,8 +24,13 @@ namespace freemount
 	
 	struct request_status
 	{
+		int               out_fd;
 		int32_t           result;
 		plus::var_string  data;
+		
+		request_status( int fd ) : out_fd( fd ), result( -1 )
+		{
+		}
 	};
 	
 	static
@@ -65,6 +71,8 @@ namespace freemount
 		
 		if ( frame.type == Frame_recv_data )
 		{
+			send_read_ack( req.out_fd, get_size( frame ) );
+			
 			const char* data = (const char*) get_data( frame );
 			
 			req.data.append( data, get_size( frame ) );
@@ -85,7 +93,7 @@ namespace freemount
 	{
 		send_read_request( out, path.data(), path.size() );
 		
-		request_status req;
+		request_status req( out );
 		
 		const int n = wait_for_result( req, in, &frame_handler, path );
 		
