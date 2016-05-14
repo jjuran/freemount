@@ -46,12 +46,14 @@ enum
 {
 	Option_clobber  = 'C',
 	Option_continue = 'c',  // resume downloads
+	Option_quiet    = 'q',
 };
 
 static command::option options[] =
 {
 	{ "clobber",  Option_clobber  },
 	{ "continue", Option_continue },
+	{ "quiet",    Option_quiet    },
 	{ NULL }
 };
 
@@ -267,6 +269,10 @@ static char* const* get_options( char* const* argv )
 				resume_downloads = true;
 				break;
 			
+			case Option_quiet:
+				show_progress = false;
+				break;
+			
 			default:
 				abort();
 		}
@@ -282,6 +288,8 @@ int main( int argc, char** argv )
 	{
 		return 0;
 	}
+	
+	show_progress = isatty( 1 );
 	
 	char *const *args = get_options( argv );
 	
@@ -312,8 +320,6 @@ int main( int argc, char** argv )
 	{
 		return 2;  // path doesn't end with a non-slash, ergo not a file
 	}
-	
-	show_progress = isatty( 1 );
 	
 	open_file( name );
 	
