@@ -36,6 +36,7 @@
 #include "freemount/queue_utils.hh"
 #include "freemount/request.hh"
 #include "freemount/response.hh"
+#include "freemount/send_lock.hh"
 #include "freemount/session.hh"
 
 
@@ -64,6 +65,8 @@ static int stat( session& s, uint8_t r_id, const request& r )
 	{
 		return -err;
 	}
+	
+	send_lock lock;
 	
 	const mode_t mode = sb.st_mode;
 	
@@ -97,6 +100,8 @@ static int list( session& s, uint8_t r_id, const request& r )
 		return -err;
 	}
 	
+	send_lock lock;
+	
 	for ( unsigned i = 0;  i < contents.size();  ++i )
 	{
 		const vfs::dir_entry& entry = contents.at( i );
@@ -122,6 +127,8 @@ static int read( session& s, uint8_t r_id, const request& r )
 		if ( S_ISREG( that->filemode() ) )
 		{
 			const uint64_t size = geteof( *file );
+			
+			send_lock lock;
 			
 			queue_int( s.queue(), Frame_stat_size, size, r_id );
 		}
@@ -179,6 +186,8 @@ static int read( session& s, uint8_t r_id, const request& r )
 		{
 			n_requested -= n_read;
 		}
+		
+		send_lock lock;
 		
 		queue_string( s.queue(), Frame_recv_data, buffer, n_read, r_id );
 		
@@ -258,6 +267,8 @@ int frame_handler( void* that, const frame_header& frame )
 	if ( frame.type == Frame_ping )
 	{
 		write( STDERR_FILENO, STR_LEN( "ping\n" ) );
+		
+		send_lock lock;
 		
 		queue_empty( s.queue(), Frame_pong );
 		

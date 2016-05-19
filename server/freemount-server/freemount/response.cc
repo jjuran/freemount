@@ -11,6 +11,7 @@
 // freemount
 #include "freemount/frame.hh"
 #include "freemount/queue_utils.hh"
+#include "freemount/send_lock.hh"
 #include "freemount/send_queue.hh"
 
 
@@ -32,6 +33,8 @@ void send_response( send_queue& queue, int result, uint8_t r_id )
 	{
 		write( STDERR_FILENO, STR_LEN( " err\n" ) );
 	}
+	
+	send_lock lock;
 	
 	queue_int( queue, Frame_result, -result, r_id );
 	
