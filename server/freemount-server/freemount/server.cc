@@ -35,6 +35,7 @@
 #include "freemount/frame_size.hh"
 #include "freemount/queue_utils.hh"
 #include "freemount/request.hh"
+#include "freemount/response.hh"
 #include "freemount/session.hh"
 
 
@@ -224,24 +225,6 @@ static int write( session& s, uint8_t r_id, const request& r )
 	}
 	
 	return 0;
-}
-
-static void send_response( send_queue& queue, int result, uint8_t r_id )
-{
-	if ( result >= 0 )
-	{
-		result = 0;
-		
-		write( STDERR_FILENO, STR_LEN( " ok\n" ) );
-	}
-	else
-	{
-		write( STDERR_FILENO, STR_LEN( " err\n" ) );
-	}
-	
-	queue_int( queue, Frame_result, -result, r_id );
-	
-	queue.flush();
 }
 
 int frame_handler( void* that, const frame_header& frame )
