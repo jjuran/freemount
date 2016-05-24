@@ -103,4 +103,23 @@ namespace freemount
 		return req.data.move();
 	}
 	
+	void synced_put( int          in,
+	                 int          out,
+	                 const char*  path,
+	                 uint32_t     path_size,
+	                 const char*  data,
+	                 uint32_t     data_size )
+	{
+		send_write_request( out, path, path_size, data, data_size );
+		
+		request_status req( out );
+		
+		const int n = wait_for_result( req, in, &frame_handler, path );
+		
+		if ( n < 0 )
+		{
+			throw path_error( path, -n );
+		}
+	}
+	
 }

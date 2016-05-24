@@ -57,6 +57,23 @@ namespace freemount
 	
 	plus::string synced_get( int in, int out, const plus::string& path );
 	
+	void synced_put( int          in,
+	                 int          out,
+	                 const char*  path,
+	                 uint32_t     path_size,
+	                 const char*  data,
+	                 uint32_t     data_size );
+	
+	inline
+	void synced_put( int                  in,
+	                 int                  out,
+	                 const plus::string&  path,
+	                 const plus::string&  data )
+	{
+		synced_put( in, out, path.data(), path.size(),
+		                     data.data(), data.size() );
+	}
+	
 }
 
 #endif
