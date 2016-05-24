@@ -42,4 +42,23 @@ namespace freemount
 		queue.flush();
 	}
 	
+	void send_write_request( int          fd,
+	                         const char*  path,
+	                         uint32_t     path_size,
+	                         const char*  data,
+	                         uint32_t     data_size,
+	                         uint8_t      r_id )
+	{
+		send_queue queue( fd );
+		
+		queue_request( queue, req_write, r_id );
+		
+		queue_string( queue, Frame_arg_path,  path, path_size, r_id );
+		queue_string( queue, Frame_send_data, data, data_size, r_id );
+		
+		queue_submit( queue, r_id );
+		
+		queue.flush();
+	}
+	
 }
