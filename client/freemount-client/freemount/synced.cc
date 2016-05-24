@@ -142,4 +142,26 @@ namespace freemount
 		return chosen_fd;
 	}
 	
+	void synced_link( int          in,
+	                  int          out,
+	                  const char*  src_path,
+	                  uint32_t     src_path_size,
+	                  const char*  dst_path,
+	                  uint32_t     dst_path_size )
+	{
+		send_link_request( out, src_path, src_path_size,
+		                        dst_path, dst_path_size );
+		
+		request_status req( out );
+		
+		// FIXME:  Error could pertain to either path.
+		
+		const int n = wait_for_result( req, in, &frame_handler, src_path );
+		
+		if ( n < 0 )
+		{
+			throw path_error( src_path, -n );
+		}
+	}
+	
 }
