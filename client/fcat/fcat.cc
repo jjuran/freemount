@@ -21,6 +21,7 @@
 #include "freemount/event_loop.hh"
 #include "freemount/frame_size.hh"
 #include "freemount/receiver.hh"
+#include "freemount/send_ack.hh"
 
 // freemount-client
 #include "freemount/address.hh"
@@ -70,6 +71,8 @@ static int frame_handler( void* that, const frame_header& frame )
 			break;
 		
 		case Frame_recv_data:
+			send_read_ack( protocol_out, get_size( frame ) );
+			
 			write( STDOUT_FILENO, get_data( frame ), get_size( frame ) );
 			break;
 		
