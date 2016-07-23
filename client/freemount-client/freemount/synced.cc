@@ -24,12 +24,17 @@ namespace freemount
 	
 	struct request_status
 	{
+		dirent_callback   dirent;
+		void*             handle;
 		int               out_fd;
 		int32_t           result;
 		plus::var_string  data;
 		
-		request_status( int fd ) : out_fd( fd ), result( -1 )
+		request_status( int fd )
 		{
+			dirent = 0;  // NULL
+			out_fd = fd;
+			result = -1;
 		}
 	};
 	
@@ -77,6 +82,19 @@ namespace freemount
 			return 0;
 		}
 		
+		if ( frame.type == Frame_dentry_name )
+		{
+			if ( req.dirent )
+			{
+				const char* data = (const char*) get_data( frame );
+				uint32_t    size =               get_size( frame );
+				
+				req.dirent( data, size, req.handle );
+			}
+			
+			return 0;
+		}
+		
 		int result = req.result = get_u32( frame );
 		
 		if ( frame.type == Frame_result )
@@ -85,6 +103,27 @@ namespace freemount
 		}
 		
 		throw unexpected_frame_type( frame.type );
+	}
+	
+	void synced_dir( int                  in,
+	                 int                  out,
+	                 const plus::string&  path,
+	                 dirent_callback      dirent,
+	                 void*                x )
+	{
+		send_list_request( out, path.data(), path.size() );
+		
+		request_status req( out );
+		
+		req.dirent = dirent;
+		req.handle = x;
+		
+		const int n = wait_for_result( req, in, &frame_handler, path );
+		
+		if ( n < 0 )
+		{
+			throw path_error( path, -n );
+		}
 	}
 	
 	plus::string synced_get( int in, int out, const plus::string& path )

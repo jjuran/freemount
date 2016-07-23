@@ -55,6 +55,14 @@ namespace freemount
 	
 	// Functions
 	
+	typedef void (*dirent_callback)( const char* name, uint32_t size, void* x );
+	
+	void synced_dir( int                  in,
+	                 int                  out,
+	                 const plus::string&  path,
+	                 dirent_callback      dirent,
+	                 void*                x );
+	
 	plus::string synced_get( int in, int out, const plus::string& path );
 	
 	void synced_put( int          in,
