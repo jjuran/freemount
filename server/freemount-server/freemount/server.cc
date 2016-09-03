@@ -32,6 +32,7 @@
 #include "vfs/primitives/stat.hh"
 
 // freemount
+#include "freemount/data_flow.hh"
 #include "freemount/frame_size.hh"
 #include "freemount/queue_utils.hh"
 #include "freemount/request.hh"
@@ -188,6 +189,8 @@ static int read( session& s, uint8_t r_id, const request& r )
 			n_requested -= n_read;
 		}
 		
+		data_transmitting( n_read );
+		
 		send_lock lock;
 		
 		queue_string( s.queue(), Frame_recv_data, buffer, n_read, r_id );
@@ -289,6 +292,7 @@ int frame_handler( void* that, const frame_header& frame )
 	
 	if ( frame.type == Frame_ack_read )
 	{
+		data_acknowledged( get_u32( frame ) );
 		return 0;
 	}
 	
