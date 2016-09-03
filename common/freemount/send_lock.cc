@@ -8,36 +8,9 @@
 // POSIX
 #include <pthread.h>
 
-// Standard C
-#include <stdlib.h>
+// must
+#include "must/pthread.h"
 
-
-namespace must
-{
-	
-	static
-	void pthread_mutex_lock( pthread_mutex_t& mutex )
-	{
-		int error = ::pthread_mutex_lock( &mutex );
-		
-		if ( error )
-		{
-			abort();
-		}
-	}
-	
-	static
-	void pthread_mutex_unlock( pthread_mutex_t& mutex )
-	{
-		int error = ::pthread_mutex_unlock( &mutex );
-		
-		if ( error )
-		{
-			abort();
-		}
-	}
-	
-}
 
 namespace freemount
 {
@@ -49,12 +22,12 @@ namespace freemount
 	
 	send_lock::send_lock()
 	{
-		must::pthread_mutex_lock( send_mutex );
+		must_pthread_mutex_lock( &send_mutex );
 	}
 	
 	send_lock::~send_lock()
 	{
-		must::pthread_mutex_unlock( send_mutex );
+		must_pthread_mutex_unlock( &send_mutex );
 	}
 	
 #endif
