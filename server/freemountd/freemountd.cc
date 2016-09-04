@@ -13,11 +13,15 @@
 // command
 #include "command/get_option.hh"
 
+// gear
+#include "gear/parse_decimal.hh"
+
 // vfs
 #include "vfs/node.hh"
 #include "vfs/node/types/posix.hh"
 
 // freemount
+#include "freemount/data_flow.hh"
 #include "freemount/event_loop.hh"
 #include "freemount/receiver.hh"
 
@@ -32,8 +36,9 @@ using namespace freemount;
 
 enum
 {
-	Option_quiet = 'q',
-	Option_user  = 'u',
+	Option_quiet  = 'q',
+	Option_user   = 'u',
+	Option_window = 'w',
 	
 	Option_last_byte = 255,
 	
@@ -42,9 +47,10 @@ enum
 
 static command::option options[] =
 {
-	{ "quiet", Option_quiet },
-	{ "root",  Option_root, Param_required },
-	{ "user",  Option_user },
+	{ "quiet",  Option_quiet },
+	{ "root",   Option_root,   Param_required },
+	{ "user",   Option_user },
+	{ "window", Option_window, Param_required },
 	{ NULL }
 };
 
@@ -60,6 +66,12 @@ static const vfs::node& root()
 	return *root;
 }
 
+
+static inline
+void set_congestion_window( const char* arg )
+{
+	set_congestion_window( gear::parse_unsigned_decimal( arg ) );
+}
 
 static char* const* get_options( char* const* argv )
 {
@@ -86,6 +98,10 @@ static char* const* get_options( char* const* argv )
 			
 			case Option_user:
 				the_user = 0;
+				break;
+			
+			case Option_window:
+				set_congestion_window( command::global_result.param );
 				break;
 			
 			default:
