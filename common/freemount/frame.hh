@@ -41,6 +41,12 @@ namespace freemount
 		                           : &frame.data;
 	}
 	
+	inline
+	const char* get_char_data( const frame_header& frame )
+	{
+		return (const char*) get_data( frame );
+	}
+	
 	uint32_t get_u32( const frame_header& frame );
 	uint64_t get_u64( const frame_header& frame );
 	

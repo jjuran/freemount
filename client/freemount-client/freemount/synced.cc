@@ -73,9 +73,7 @@ namespace freemount
 		{
 			send_read_ack( req.out_fd, get_size( frame ) );
 			
-			const char* data = (const char*) get_data( frame );
-			
-			req.data.append( data, get_size( frame ) );
+			req.data.append( get_char_data( frame ), get_size( frame ) );
 			return 0;
 		}
 		

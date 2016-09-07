@@ -214,7 +214,7 @@ void send_list_request( const plus::string& path, uint8_t r_id )
 static
 plus::string string_from_frame( const frame_header& frame )
 {
-	plus::string result( (const char*) get_data( frame ), get_size( frame ) );
+	plus::string result( get_char_data( frame ), get_size( frame ) );
 	
 	return result;
 }
@@ -226,19 +226,19 @@ int frame_handler( void* that, const frame_header& frame )
 	{
 		case Frame_fatal:
 			write( STDERR_FILENO, STR_LEN( "[FATAL]: " ) );
-			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, get_char_data( frame ), get_size( frame ) );
 			write( STDERR_FILENO, STR_LEN( "\n" ) );
 			return 0;
 		
 		case Frame_error:
 			write( STDERR_FILENO, STR_LEN( "[ERROR]: " ) );
-			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, get_char_data( frame ), get_size( frame ) );
 			write( STDERR_FILENO, STR_LEN( "\n" ) );
 			return 0;
 		
 		case Frame_debug:
 			write( STDERR_FILENO, STR_LEN( "[DEBUG]: " ) );
-			write( STDERR_FILENO, (const char*) get_data( frame ), get_size( frame ) );
+			write( STDERR_FILENO, get_char_data( frame ), get_size( frame ) );
 			write( STDERR_FILENO, STR_LEN( "\n" ) );
 			return 0;
 		
