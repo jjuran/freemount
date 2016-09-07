@@ -64,7 +64,8 @@ struct stat_response
 
 static std::map< uint8_t, stat_response > the_stats;
 
-static uint8_t next_id()
+static
+uint8_t next_id()
 {
 	uint8_t last = 0;
 	
@@ -83,7 +84,8 @@ static uint8_t next_id()
 	return ++last;  // overflows to zero if no ids left
 }
 
-static plus::string format_mode( uint32_t mode )
+static
+plus::string format_mode( uint32_t mode )
 {
 	char mode_string[] = "?rwxrwxrwx";
 	
@@ -137,7 +139,8 @@ static plus::string format_mode( uint32_t mode )
 	return mode_string;
 }
 
-static void append_number( plus::var_string& result, uint64_t number, int n_columns = 0 )
+static
+void append_number( plus::var_string& result, uint64_t number, int n_columns = 0 )
 {
 	const int magnitude = gear::magnitude< 10 >( number );
 	
@@ -167,7 +170,8 @@ static void append_number( plus::var_string& result, uint64_t number, int n_colu
 	}
 }
 
-static void print( const stat_response& st )
+static
+void print( const stat_response& st )
 {
 	plus::var_string result = format_mode( st.mode );
 	
@@ -188,7 +192,8 @@ static void print( const stat_response& st )
 	write( STDOUT_FILENO, result.data(), result.size() );
 }
 
-static void send_stat_request( const plus::string& path, uint8_t r_id )
+static
+void send_stat_request( const plus::string& path, uint8_t r_id )
 {
 	stat_response& st = the_stats[ r_id ];
 	
@@ -200,19 +205,22 @@ static void send_stat_request( const plus::string& path, uint8_t r_id )
 	send_stat_request( protocol_out, path.data(), path.size(), r_id );
 }
 
-static void send_list_request( const plus::string& path, uint8_t r_id )
+static
+void send_list_request( const plus::string& path, uint8_t r_id )
 {
 	send_list_request( protocol_out, path.data(), path.size(), r_id );
 }
 
-static plus::string string_from_frame( const frame_header& frame )
+static
+plus::string string_from_frame( const frame_header& frame )
 {
 	plus::string result( (const char*) get_data( frame ), get_size( frame ) );
 	
 	return result;
 }
 
-static int frame_handler( void* that, const frame_header& frame )
+static
+int frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{

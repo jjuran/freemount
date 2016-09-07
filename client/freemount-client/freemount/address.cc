@@ -26,7 +26,8 @@ namespace freemount
 	static const char* ussh_argv[] = { NULL, "ussh", "--", NULL, "bin/freemountd", "-qu", "--root", ".", NULL };
 	
 	
-	static const char** parse_mnt_hostpath( char* hostpath )
+	static
+	const char** parse_mnt_hostpath( char* hostpath )
 	{
 		char* slash = strchr( hostpath, '/' );
 		
@@ -52,21 +53,24 @@ namespace freemount
 		return utcp_argv + 1;
 	}
 	
-	static const char** parse_unix_path( const char* path )
+	static
+	const char** parse_unix_path( const char* path )
 	{
 		uunix_argv[ 2 ] = path;
 		
 		return uunix_argv + 1;
 	}
 	
-	static const char** parse_exec_path( const char* path )
+	static
+	const char** parse_exec_path( const char* path )
 	{
 		uexec_argv[ 2 ] = path;
 		
 		return uexec_argv + 1;
 	}
 	
-	static const char** parse_ssh_path( char* path )
+	static
+	const char** parse_ssh_path( char* path )
 	{
 		if ( path[ 0 ] != '\0' )
 		{

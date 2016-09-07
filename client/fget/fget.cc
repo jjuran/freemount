@@ -80,7 +80,8 @@ static float the_divisor;
 static int the_result;
 
 
-static void update_progress()
+static
+void update_progress()
 {
 	if ( show_progress  &&  the_expected_size != 0 )
 	{
@@ -92,7 +93,8 @@ static void update_progress()
 	}
 }
 
-static void end_progress()
+static
+void end_progress()
 {
 	if ( show_progress  &&  the_expected_size != 0 )
 	{
@@ -100,7 +102,8 @@ static void end_progress()
 	}
 }
 
-static int frame_handler( void* that, const frame_header& frame )
+static
+int frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{
@@ -158,7 +161,8 @@ static int frame_handler( void* that, const frame_header& frame )
 	return 0;
 }
 
-static const char* name_from_path( const char* path )
+static
+const char* name_from_path( const char* path )
 {
 	if ( const char* slash = strrchr( path, '/' ) )
 	{
@@ -173,7 +177,8 @@ static const char* name_from_path( const char* path )
 	return path;
 }
 
-static void open_file( const char* name )
+static
+void open_file( const char* name )
 {
 	const bool reopening = clobbering || resume_downloads;
 	
@@ -226,17 +231,20 @@ static void open_file( const char* name )
 	}
 }
 
-static inline void queue_request( send_queue& queue, uint8_t request_type )
+static inline
+void queue_request( send_queue& queue, uint8_t request_type )
 {
 	queue_int( queue, Frame_request, request_type );
 }
 
-static inline void queue_submit( send_queue& queue )
+static inline
+void queue_submit( send_queue& queue )
 {
 	queue_empty( queue, Frame_submit );
 }
 
-static void send_read_request( int fd, const char* path, uint32_t size, off_t offset )
+static
+void send_read_request( int fd, const char* path, uint32_t size, off_t offset )
 {
 	send_queue queue( fd );
 	
@@ -254,7 +262,8 @@ static void send_read_request( int fd, const char* path, uint32_t size, off_t of
 	queue.flush();
 }
 
-static char* const* get_options( char* const* argv )
+static
+char* const* get_options( char* const* argv )
 {
 	++argv;  // skip arg 0
 	

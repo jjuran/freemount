@@ -44,7 +44,8 @@ static const char* the_path = "/";
 static int the_result;
 
 
-static int frame_handler( void* that, const frame_header& frame )
+static
+int frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{

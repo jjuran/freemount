@@ -28,12 +28,14 @@ namespace freemount
 	#define FREEMOUNT_FRAME_HEADER_INITIALIZER  { 0, 0, 0,  0, 0, 0, 0 }
 	
 	
-	inline const void* get_payload_data( const frame_header& frame )
+	inline
+	const void* get_payload_data( const frame_header& frame )
 	{
 		return &frame + 1;
 	}
 	
-	inline const void* get_data( const frame_header& frame )
+	inline
+	const void* get_data( const frame_header& frame )
 	{
 		return frame.big_size != 0 ? get_payload_data( frame )
 		                           : &frame.data;

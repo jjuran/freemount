@@ -21,7 +21,8 @@ namespace freemount
 	
 	void queue_string( send_queue& queue, uint8_t type, const char* s, uint32_t len, uint8_t r_id = 0 );
 	
-	inline void queue_empty( send_queue& queue, uint8_t type, uint8_t r_id = 0 )
+	inline
+	void queue_empty( send_queue& queue, uint8_t type, uint8_t r_id = 0 )
 	{
 		queue_int_( queue, type, uint8_t(), r_id );
 	}
@@ -31,7 +32,8 @@ namespace freemount
 	template <           > struct freemount_int< 8 > { typedef uint64_t type; };
 	
 	template < class Int >
-	inline void queue_int( send_queue& queue, uint8_t type, Int value, uint8_t r_id = 0 )
+	inline
+	void queue_int( send_queue& queue, uint8_t type, Int value, uint8_t r_id = 0 )
 	{
 		typedef typename freemount_int< sizeof (Int) >::type int_t;
 		

@@ -24,11 +24,13 @@ namespace freemount
 	
 #ifdef __RELIX__
 	
-	inline send_lock::send_lock()
+	inline
+	send_lock::send_lock()
 	{
 	}
 	
-	inline send_lock::~send_lock()
+	inline
+	send_lock::~send_lock()
 	{
 	}
 	

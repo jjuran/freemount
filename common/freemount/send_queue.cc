@@ -15,7 +15,8 @@
 namespace freemount
 {
 	
-	inline void buffer::append_UNCHECKED( const void* data, size_t n )
+	inline
+	void buffer::append_UNCHECKED( const void* data, size_t n )
 	{
 		mempcpy( its_buffer + its_mark, data, n );
 		

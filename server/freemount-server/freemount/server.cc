@@ -53,7 +53,8 @@ namespace p7 = poseven;
 using ::write;
 
 
-static int stat( session& s, uint8_t r_id, const request& r )
+static
+int stat( session& s, uint8_t r_id, const request& r )
 {
 	struct stat sb;
 	
@@ -87,7 +88,8 @@ static int stat( session& s, uint8_t r_id, const request& r )
 	return 0;
 }
 
-static int list( session& s, uint8_t r_id, const request& r )
+static
+int list( session& s, uint8_t r_id, const request& r )
 {
 	vfs::dir_contents contents;
 	
@@ -116,7 +118,8 @@ static int list( session& s, uint8_t r_id, const request& r )
 	return 0;
 }
 
-static int read( session& s, uint8_t r_id, const request& r )
+static
+int read( session& s, uint8_t r_id, const request& r )
 {
 	vfs::filehandle_ptr file;
 	
@@ -201,7 +204,8 @@ static int read( session& s, uint8_t r_id, const request& r )
 	return 0;
 }
 
-static int write( session& s, uint8_t r_id, const request& r )
+static
+int write( session& s, uint8_t r_id, const request& r )
 {
 	ssize_t n_written = -1;
 	
@@ -240,7 +244,8 @@ static int write( session& s, uint8_t r_id, const request& r )
 	return 0;
 }
 
-static int start_read( session& s, uint8_t r_id, const request& r )
+static
+int start_read( session& s, uint8_t r_id, const request& r )
 {
 	begin_task( &read, s, r_id );
 	

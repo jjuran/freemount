@@ -57,7 +57,8 @@ static int count = -1;
 
 static int event_loop_result;
 
-static int frame_handler( void* that, const frame_header& frame )
+static
+int frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{
@@ -96,7 +97,8 @@ static int frame_handler( void* that, const frame_header& frame )
 	return 0;
 }
 
-static void* event_loop_start( void* arg )
+static
+void* event_loop_start( void* arg )
 {
 	data_receiver r( &frame_handler, NULL );
 	
@@ -105,7 +107,8 @@ static void* event_loop_start( void* arg )
 	return NULL;
 }
 
-static void* pinger_start( void* arg )
+static
+void* pinger_start( void* arg )
 {
 	for ( ;; )
 	{
@@ -126,7 +129,8 @@ static void* pinger_start( void* arg )
 
 #define BAD_USAGE( text, arg )  command::usage( STR_LEN( text ": " ), arg )
 
-static char* const* get_options( char* const* argv )
+static
+char* const* get_options( char* const* argv )
 {
 	if ( *argv == NULL )
 	{

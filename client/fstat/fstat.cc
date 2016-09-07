@@ -48,7 +48,8 @@ static const char* the_path;
 static int the_result;
 
 
-static void print_mode( uint32_t mode )
+static
+void print_mode( uint32_t mode )
 {
 	char mode_string[] = "?rwxrwxrwx";
 	
@@ -102,7 +103,8 @@ static void print_mode( uint32_t mode )
 	write( STDOUT_FILENO, mode_string, sizeof mode_string - 1 );
 }
 
-static void print_number( uint64_t number )
+static
+void print_number( uint64_t number )
 {
 	write( STDOUT_FILENO, "  ", 2 );
 	
@@ -111,7 +113,8 @@ static void print_number( uint64_t number )
 	write( STDOUT_FILENO, decimal, strlen( decimal ) );
 }
 
-static int frame_handler( void* that, const frame_header& frame )
+static
+int frame_handler( void* that, const frame_header& frame )
 {
 	switch ( frame.type )
 	{

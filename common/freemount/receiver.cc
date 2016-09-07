@@ -22,7 +22,8 @@ namespace freemount
 	{
 	}
 	
-	static inline size_t pad( size_t value, unsigned multiple )
+	static inline
+	size_t pad( size_t value, unsigned multiple )
 	{
 		const unsigned mask = multiple - 1;
 		

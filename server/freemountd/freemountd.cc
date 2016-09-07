@@ -59,7 +59,8 @@ static const char* the_native_root_directory = "/var/freemount";
 static uid_t the_user = uid_t( -1 );
 
 
-static const vfs::node& root()
+static
+const vfs::node& root()
 {
 	static vfs::node_ptr root = vfs::new_posix_root( the_native_root_directory, the_user );
 	
@@ -73,7 +74,8 @@ void set_congestion_window( const char* arg )
 	set_congestion_window( gear::parse_unsigned_decimal( arg ) );
 }
 
-static char* const* get_options( char* const* argv )
+static
+char* const* get_options( char* const* argv )
 {
 	++argv;  // skip arg 0
 	

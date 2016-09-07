@@ -14,7 +14,8 @@
 namespace freemount
 {
 	
-	static ssize_t write_all( int fd, const void* buffer, size_t n )
+	static
+	ssize_t write_all( int fd, const void* buffer, size_t n )
 	{
 		size_t n_bytes = 0;
 		
@@ -57,7 +58,8 @@ namespace freemount
 	}
 	
 	
-	static inline void throw_failed_write( int errnum )
+	static inline
+	void throw_failed_write( int errnum )
 	{
 		failed_write error = { errnum };
 		

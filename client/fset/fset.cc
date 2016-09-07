@@ -40,22 +40,26 @@ struct request_status
 	ssize_t result;
 };
 
-static void report_error( const char* path, uint32_t err )
+static
+void report_error( const char* path, uint32_t err )
 {
 	more::perror( "fset", path, err );
 }
 
-static inline void queue_request( send_queue& queue, uint8_t request_type )
+static inline
+void queue_request( send_queue& queue, uint8_t request_type )
 {
 	queue_int( queue, Frame_request, request_type );
 }
 
-static inline void queue_submit( send_queue& queue )
+static inline
+void queue_submit( send_queue& queue )
 {
 	queue_empty( queue, Frame_submit );
 }
 
-static void send_put_request( int fd, const char* path, const char* data, size_t size )
+static
+void send_put_request( int fd, const char* path, const char* data, size_t size )
 {
 	send_queue queue( fd );
 	
@@ -69,7 +73,8 @@ static void send_put_request( int fd, const char* path, const char* data, size_t
 	queue.flush();
 }
 
-static int wait_for_result( int fd, frame_handler_function handler, const char* path )
+static
+int wait_for_result( int fd, frame_handler_function handler, const char* path )
 {
 	request_status req;
 	
@@ -99,7 +104,8 @@ static int wait_for_result( int fd, frame_handler_function handler, const char* 
 	return result;
 }
 
-static int frame_handler( void* that, const frame_header& frame )
+static
+int frame_handler( void* that, const frame_header& frame )
 {
 	if ( frame.type == Frame_ack_write )
 	{
@@ -116,7 +122,8 @@ static int frame_handler( void* that, const frame_header& frame )
 	return 3;
 }
 
-static ssize_t request_put( const char* path, const char* data, size_t length )
+static
+ssize_t request_put( const char* path, const char* data, size_t length )
 {
 	send_put_request( protocol_out, path, data, length );
 	
