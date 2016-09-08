@@ -45,6 +45,8 @@
 #include "freemount/task.hh"
 
 
+#define ARRAY_LEN( a )  (sizeof a / sizeof a[0])
+
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
 
@@ -317,6 +319,37 @@ int start_read( session& s, uint8_t r_id, const request& r )
 	return 1;
 }
 
+struct request_desc
+{
+	const char*  name;
+	req_func     handler;
+};
+
+static request_desc request_descs[] =
+{
+	{ 0 },
+	{ "vers" },
+	{ "auth" },
+	{ "stat",  &stat },
+	{ "list",  &list },
+	{ "read",  &start_read },
+	{ "write", &write },
+	{ "open",  &open },
+	{ "close", &close },
+	{ "link",  &link },
+};
+
+static inline
+bool request_is_implemented( uint8_t req_type )
+{
+	if ( req_type >= ARRAY_LEN( request_descs ) )
+	{
+		return false;
+	}
+	
+	return request_descs[ req_type ].handler != NULL;
+}
+
 int frame_handler( void* that, const frame_header& frame )
 {
 	session& s = *(session*) that;
@@ -372,39 +405,17 @@ int frame_handler( void* that, const frame_header& frame )
 	
 	if ( frame.type == Frame_request )
 	{
-		switch ( frame.data )
+		const request_type req_type = request_type( frame.data );
+		
+		if ( ! request_is_implemented( req_type ) )
 		{
-			case req_stat:
-				write( STDERR_FILENO, STR_LEN( "stat..." ) );
-				break;
-			
-			case req_list:
-				write( STDERR_FILENO, STR_LEN( "list..." ) );
-				break;
-			
-			case req_read:
-				write( STDERR_FILENO, STR_LEN( "read..." ) );
-				break;
-			
-			case req_write:
-				write( STDERR_FILENO, STR_LEN( "write..." ) );
-				break;
-			
-			case req_open:
-				write( STDERR_FILENO, STR_LEN( "open..." ) );
-				break;
-			
-			case req_close:
-				write( STDERR_FILENO, STR_LEN( "close..." ) );
-				break;
-			
-			case req_link:
-				write( STDERR_FILENO, STR_LEN( "link..." ) );
-				break;
-			
-			default:
-				abort();
+			fprintf( stderr, "Unimplemented request type %d\n", req_type );
+			return -ENOSYS;
 		}
+		
+		const request_desc& desc = request_descs[ req_type ];
+		
+		fprintf( stderr, "New %s request, id %d\n", desc.name, request_id );
 		
 		if ( req != NULL )
 		{
@@ -426,6 +437,8 @@ int frame_handler( void* that, const frame_header& frame )
 	const char* data = get_char_data( frame );
 	
 	request& r = *req;
+	
+	const request_desc& desc = request_descs[ r.type ];
 	
 	switch ( frame.type )
 	{
@@ -466,45 +479,11 @@ int frame_handler( void* that, const frame_header& frame )
 		case Frame_submit:
 			int err;
 			
-			err = 0;
+			err = desc.handler( s, request_id, r );
 			
-			switch ( r.type )
+			if ( err > 0 )
 			{
-				case req_stat:
-					err = stat( s, request_id, r );
-					break;
-				
-				case req_list:
-					err = list( s, request_id, r );
-					break;
-				
-				case req_read:
-					err = start_read( s, request_id, r );
-					
-					if ( err > 0 )
-					{
-						return 0;  // in progress
-					}
-					break;
-				
-				case req_write:
-					err = write( s, request_id, r );
-					break;
-				
-				case req_open:
-					err = open( s, request_id, r );
-					break;
-				
-				case req_close:
-					err = close( s, request_id, r );
-					break;
-				
-				case req_link:
-					err = link( s, request_id, r );
-					break;
-				
-				default:
-					abort();
+				return 0;  // in progress
 			}
 			
 			s.set_request( request_id, NULL );
