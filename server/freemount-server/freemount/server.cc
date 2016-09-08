@@ -373,10 +373,6 @@ int frame_handler( void* that, const frame_header& frame )
 	{
 		switch ( frame.data )
 		{
-			case req_auth:
-				write( STDERR_FILENO, STR_LEN( "auth..." ) );
-				break;
-			
 			case req_stat:
 				write( STDERR_FILENO, STR_LEN( "stat..." ) );
 				break;
@@ -475,9 +471,6 @@ int frame_handler( void* that, const frame_header& frame )
 			
 			switch ( r.type )
 			{
-				case req_auth:
-					break;
-				
 				case req_stat:
 					err = stat( s, request_id, r );
 					break;
