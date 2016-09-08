@@ -319,10 +319,48 @@ int start_read( session& s, uint8_t r_id, const request& r )
 	return 1;
 }
 
+enum arg_mask
+{
+	Mask_req    = (1 << Frame_request) | (1 << Frame_submit),
+	Mask_path   = 1 << Frame_arg_path,
+	Mask_fd     = 1 << Frame_arg_fd,
+	
+	Mask_data   = 1 << Frame_send_data,
+	Mask_count  = 1 << Frame_io_count,
+	Mask_offset = 1 << Frame_seek_offset,
+};
+
+static const char* arg_names[] =
+{
+	"request",
+	"submit",
+	"cancel",
+	NULL,
+	"path",
+	NULL,
+	"fd",
+	NULL,
+	"sent data",
+	"I/O byte count",
+	"seek offset",
+};
+
+static
+const char* name_of_arg( uint8_t type )
+{
+	if ( type >= ARRAY_LEN( arg_names ) )
+	{
+		return NULL;
+	}
+	
+	return arg_names[ type ];
+}
+
 struct request_desc
 {
 	const char*  name;
 	req_func     handler;
+	uint64_t     arg_mask;
 };
 
 static request_desc request_descs[] =
@@ -330,13 +368,13 @@ static request_desc request_descs[] =
 	{ 0 },
 	{ "vers" },
 	{ "auth" },
-	{ "stat",  &stat },
-	{ "list",  &list },
-	{ "read",  &start_read },
-	{ "write", &write },
-	{ "open",  &open },
-	{ "close", &close },
-	{ "link",  &link },
+	{ "stat",  &stat,       Mask_req | Mask_path },
+	{ "list",  &list,       Mask_req | Mask_path },
+	{ "read",  &start_read, Mask_req | Mask_path | Mask_count | Mask_offset },
+	{ "write", &write,      Mask_req | Mask_path | Mask_data  | Mask_offset },
+	{ "open",  &open,       Mask_req | Mask_path | Mask_fd },
+	{ "close", &close,      Mask_req | Mask_fd },
+	{ "link",  &link,       Mask_req | Mask_path },
 };
 
 static inline
@@ -399,6 +437,14 @@ int frame_handler( void* that, const frame_header& frame )
 		return 0;
 	}
 	
+	const char* arg_name = name_of_arg( frame.type );
+	
+	if ( arg_name == NULL )
+	{
+		fprintf( stderr, "Invalid arg type %d\n", frame.type );
+		return -EINVAL;
+	}
+	
 	const uint8_t request_id = frame.r_id;
 	
 	request* req = s.get_request( request_id );
@@ -440,23 +486,17 @@ int frame_handler( void* that, const frame_header& frame )
 	
 	const request_desc& desc = request_descs[ r.type ];
 	
+	if ( ! (desc.arg_mask & (1 << frame.type)) )
+	{
+		const char* name = desc.name;
+		
+		fprintf( stderr, "Invalid %s arg for %s request\n", arg_name, name );
+		return -EINVAL;
+	}
+	
 	switch ( frame.type )
 	{
 		case Frame_arg_path:
-			switch ( r.type )
-			{
-				case req_stat:
-				case req_list:
-				case req_read:
-				case req_write:
-				case req_open:
-				case req_link:
-					break;
-				
-				default:
-					abort();
-			}
-			
 			(r.path.empty() ? r.path : r.data).assign( data, get_size( frame ) );
 			break;
 		
