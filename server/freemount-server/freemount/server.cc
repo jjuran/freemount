@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 
 // Standard C
+#include <stdio.h>
 #include <stdlib.h>
 
 // poseven
@@ -407,9 +408,8 @@ int frame_handler( void* that, const frame_header& frame )
 		
 		if ( req != NULL )
 		{
-			write( STDERR_FILENO, STR_LEN( "DUP\n" ) );
-			
-			abort();
+			fprintf( stderr, "Duplicate request id %d\n", request_id );
+			return -EEXIST;
 		}
 		
 		s.set_request( request_id, new request( request_type( frame.data ) ) );
@@ -419,9 +419,8 @@ int frame_handler( void* that, const frame_header& frame )
 	
 	if ( req == NULL )
 	{
-		write( STDERR_FILENO, STR_LEN( "BAD id\n" ) );
-		
-		abort();
+		fprintf( stderr, "Nonexistent request id %d\n", request_id );
+		return -ESRCH;
 	}
 	
 	const char* data = get_char_data( frame );

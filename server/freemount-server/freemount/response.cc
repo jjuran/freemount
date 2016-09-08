@@ -5,17 +5,15 @@
 
 #include "freemount/response.hh"
 
-// POSIX
-#include <unistd.h>
+// Standard C
+#include <stdio.h>
+#include <string.h>
 
 // freemount
 #include "freemount/frame.hh"
 #include "freemount/queue_utils.hh"
 #include "freemount/send_lock.hh"
 #include "freemount/send_queue.hh"
-
-
-#define STR_LEN( s )  "" s, (sizeof s - 1)
 
 
 namespace freemount {
@@ -27,11 +25,13 @@ void send_response( send_queue& queue, int result, uint8_t r_id )
 	{
 		result = 0;
 		
-		write( STDERR_FILENO, STR_LEN( " ok\n" ) );
+		fprintf( stderr, "Request id %u: ok\n", r_id );
 	}
 	else
 	{
-		write( STDERR_FILENO, STR_LEN( " err\n" ) );
+		const int e = -result;
+		
+		fprintf( stderr, "Request id %u: %s (%d)\n", r_id, strerror( e ), e );
 	}
 	
 	send_lock lock;
