@@ -34,7 +34,8 @@ namespace freemount
 		request( request_type type = req_none );
 	};
 	
-	inline request::request( request_type type )
+	inline
+	request::request( request_type type )
 	:
 		type( type ),
 		n( -1 ),
