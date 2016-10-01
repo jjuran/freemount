@@ -85,7 +85,12 @@ int main( int argc, char** argv )
 		return 1;
 	}
 	
-	pause();
+	/*
+		Block until the server quits.  Assumes no pings or debug frames.
+	*/
+	
+	char any;
+	read( protocol_in, &any, 1 );
 	
 	return 0;
 }
