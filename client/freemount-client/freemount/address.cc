@@ -54,8 +54,15 @@ namespace freemount
 	}
 	
 	static
-	const char** parse_unix_path( const char* path )
+	const char** parse_unix_path( char* path )
 	{
+		if ( char* caret = strchr( path, '^' ) )
+		{
+			*caret++ = '\0';
+			
+			uunix_argv[ 0 ] = caret;  // directory path
+		}
+		
 		uunix_argv[ 2 ] = path;
 		
 		return uunix_argv + 1;
