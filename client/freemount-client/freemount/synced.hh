@@ -80,6 +80,13 @@ namespace freemount
 	                 const char*  path,
 	                 uint32_t     path_size );
 	
+	void synced_link( int          in,
+	                  int          out,
+	                  const char*  src_path,
+	                  uint32_t     src_path_size,
+	                  const char*  dst_path,
+	                  uint32_t     dst_path_size );
+	
 }
 
 #endif
