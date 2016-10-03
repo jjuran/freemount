@@ -122,4 +122,24 @@ namespace freemount
 		}
 	}
 	
+	int synced_open( int          in,
+	                 int          out,
+	                 int          chosen_fd,
+	                 const char*  path,
+	                 uint32_t     path_size )
+	{
+		send_open_request( out, chosen_fd, path, path_size );
+		
+		request_status req( out );
+		
+		const int n = wait_for_result( req, in, &frame_handler, path );
+		
+		if ( n < 0 )
+		{
+			throw path_error( path, -n );
+		}
+		
+		return chosen_fd;
+	}
+	
 }

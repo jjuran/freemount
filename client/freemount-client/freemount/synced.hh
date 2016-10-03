@@ -74,6 +74,12 @@ namespace freemount
 		                     data.data(), data.size() );
 	}
 	
+	int synced_open( int          in,
+	                 int          out,
+	                 int          chosen_fd,
+	                 const char*  path,
+	                 uint32_t     path_size );
+	
 }
 
 #endif
