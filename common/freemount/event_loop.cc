@@ -39,7 +39,7 @@ namespace freemount
 			{
 				return 0;
 			}
-			else if ( errno != EINTR )
+			else
 			{
 				return -errno;
 			}
