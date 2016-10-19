@@ -69,11 +69,6 @@ int main( int argc, char** argv )
 	
 	try
 	{
-		unet::connection_box the_connection = unet::connect( connector_argv );
-		
-		write( STDOUT_FILENO, STR_LEN( "connected\n" ) );
-		
-		
 		int lock_fd = OPEN( PORT "/lock" );
 		
 		PUT( PORT "/procid", "4" "\n" );
@@ -129,5 +124,5 @@ int main( int argc, char** argv )
 	char any;
 	read( protocol_in, &any, 1 );
 	
-	// not reached
+	return 0;
 }
