@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 
 // Standard C
+#include <stdio.h>
 #include <stdlib.h>
 
 // poseven
@@ -43,6 +44,8 @@
 #include "freemount/session.hh"
 #include "freemount/task.hh"
 
+
+#define ARRAY_LEN( a )  (sizeof a / sizeof a[0])
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
@@ -316,6 +319,75 @@ int start_read( session& s, uint8_t r_id, const request& r )
 	return 1;
 }
 
+enum arg_mask
+{
+	Mask_req    = (1 << Frame_request) | (1 << Frame_submit),
+	Mask_path   = 1 << Frame_arg_path,
+	Mask_fd     = 1 << Frame_arg_fd,
+	
+	Mask_data   = 1 << Frame_send_data,
+	Mask_count  = 1 << Frame_io_count,
+	Mask_offset = 1 << Frame_seek_offset,
+};
+
+static const char* arg_names[] =
+{
+	"request",
+	"submit",
+	"cancel",
+	NULL,
+	"path",
+	NULL,
+	"fd",
+	NULL,
+	"sent data",
+	"I/O byte count",
+	"seek offset",
+};
+
+static
+const char* name_of_arg( uint8_t type )
+{
+	if ( type >= ARRAY_LEN( arg_names ) )
+	{
+		return NULL;
+	}
+	
+	return arg_names[ type ];
+}
+
+struct request_desc
+{
+	const char*  name;
+	req_func     handler;
+	uint64_t     arg_mask;
+};
+
+static request_desc request_descs[] =
+{
+	{ 0 },
+	{ "vers" },
+	{ "auth" },
+	{ "stat",  &stat,       Mask_req | Mask_path },
+	{ "list",  &list,       Mask_req | Mask_path },
+	{ "read",  &start_read, Mask_req | Mask_path | Mask_count | Mask_offset },
+	{ "write", &write,      Mask_req | Mask_path | Mask_data  | Mask_offset },
+	{ "open",  &open,       Mask_req | Mask_path | Mask_fd },
+	{ "close", &close,      Mask_req | Mask_fd },
+	{ "link",  &link,       Mask_req | Mask_path },
+};
+
+static inline
+bool request_is_implemented( uint8_t req_type )
+{
+	if ( req_type >= ARRAY_LEN( request_descs ) )
+	{
+		return false;
+	}
+	
+	return request_descs[ req_type ].handler != NULL;
+}
+
 int frame_handler( void* that, const frame_header& frame )
 {
 	session& s = *(session*) that;
@@ -365,51 +437,36 @@ int frame_handler( void* that, const frame_header& frame )
 		return 0;
 	}
 	
+	const char* arg_name = name_of_arg( frame.type );
+	
+	if ( arg_name == NULL )
+	{
+		fprintf( stderr, "Invalid arg type %d\n", frame.type );
+		return -EINVAL;
+	}
+	
 	const uint8_t request_id = frame.r_id;
 	
 	request* req = s.get_request( request_id );
 	
 	if ( frame.type == Frame_request )
 	{
-		switch ( frame.data )
+		const request_type req_type = request_type( frame.data );
+		
+		if ( ! request_is_implemented( req_type ) )
 		{
-			case req_stat:
-				write( STDERR_FILENO, STR_LEN( "stat..." ) );
-				break;
-			
-			case req_list:
-				write( STDERR_FILENO, STR_LEN( "list..." ) );
-				break;
-			
-			case req_read:
-				write( STDERR_FILENO, STR_LEN( "read..." ) );
-				break;
-			
-			case req_write:
-				write( STDERR_FILENO, STR_LEN( "write..." ) );
-				break;
-			
-			case req_open:
-				write( STDERR_FILENO, STR_LEN( "open..." ) );
-				break;
-			
-			case req_close:
-				write( STDERR_FILENO, STR_LEN( "close..." ) );
-				break;
-			
-			case req_link:
-				write( STDERR_FILENO, STR_LEN( "link..." ) );
-				break;
-			
-			default:
-				abort();
+			fprintf( stderr, "Unimplemented request type %d\n", req_type );
+			return -ENOSYS;
 		}
+		
+		const request_desc& desc = request_descs[ req_type ];
+		
+		fprintf( stderr, "New %s request, id %d\n", desc.name, request_id );
 		
 		if ( req != NULL )
 		{
-			write( STDERR_FILENO, STR_LEN( "DUP\n" ) );
-			
-			abort();
+			fprintf( stderr, "Duplicate request id %d\n", request_id );
+			return -EEXIST;
 		}
 		
 		s.set_request( request_id, new request( request_type( frame.data ) ) );
@@ -419,32 +476,27 @@ int frame_handler( void* that, const frame_header& frame )
 	
 	if ( req == NULL )
 	{
-		write( STDERR_FILENO, STR_LEN( "BAD id\n" ) );
-		
-		abort();
+		fprintf( stderr, "Nonexistent request id %d\n", request_id );
+		return -ESRCH;
 	}
 	
 	const char* data = get_char_data( frame );
 	
 	request& r = *req;
 	
+	const request_desc& desc = request_descs[ r.type ];
+	
+	if ( ! (desc.arg_mask & (1 << frame.type)) )
+	{
+		const char* name = desc.name;
+		
+		fprintf( stderr, "Invalid %s arg for %s request\n", arg_name, name );
+		return -EINVAL;
+	}
+	
 	switch ( frame.type )
 	{
 		case Frame_arg_path:
-			switch ( r.type )
-			{
-				case req_stat:
-				case req_list:
-				case req_read:
-				case req_write:
-				case req_open:
-				case req_link:
-					break;
-				
-				default:
-					abort();
-			}
-			
 			(r.path.empty() ? r.path : r.data).assign( data, get_size( frame ) );
 			break;
 		
@@ -467,45 +519,11 @@ int frame_handler( void* that, const frame_header& frame )
 		case Frame_submit:
 			int err;
 			
-			err = 0;
+			err = desc.handler( s, request_id, r );
 			
-			switch ( r.type )
+			if ( err > 0 )
 			{
-				case req_stat:
-					err = stat( s, request_id, r );
-					break;
-				
-				case req_list:
-					err = list( s, request_id, r );
-					break;
-				
-				case req_read:
-					err = start_read( s, request_id, r );
-					
-					if ( err > 0 )
-					{
-						return 0;  // in progress
-					}
-					break;
-				
-				case req_write:
-					err = write( s, request_id, r );
-					break;
-				
-				case req_open:
-					err = open( s, request_id, r );
-					break;
-				
-				case req_close:
-					err = close( s, request_id, r );
-					break;
-				
-				case req_link:
-					err = link( s, request_id, r );
-					break;
-				
-				default:
-					abort();
+				return 0;  // in progress
 			}
 			
 			s.set_request( request_id, NULL );
