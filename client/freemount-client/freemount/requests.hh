@@ -62,6 +62,8 @@ namespace freemount
 	                        uint32_t     path_size,
 	                        uint8_t      r_id = 0 );
 	
+	void send_close_request( int fd, int file_fd, uint8_t r_id = 0 );
+	
 	void send_link_request( int          fd,
 	                        const char*  src_path,
 	                        uint32_t     src_path_size,
