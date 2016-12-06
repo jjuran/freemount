@@ -147,6 +147,21 @@ int open( session& s, uint8_t r_id, const request& r )
 }
 
 static
+int close( session& s, uint8_t r_id, const request& r )
+{
+	int fd = r.fd;
+	
+	if ( s.get_open_file( fd ) == NULL )
+	{
+		return -EBADF;
+	}
+	
+	s.set_open_file( fd, NULL );
+	
+	return 0;
+}
+
+static
 int read( session& s, uint8_t r_id, const request& r )
 {
 	vfs::filehandle_ptr file;
@@ -382,6 +397,10 @@ int frame_handler( void* that, const frame_header& frame )
 				write( STDERR_FILENO, STR_LEN( "open..." ) );
 				break;
 			
+			case req_close:
+				write( STDERR_FILENO, STR_LEN( "close..." ) );
+				break;
+			
 			case req_link:
 				write( STDERR_FILENO, STR_LEN( "link..." ) );
 				break;
@@ -482,6 +501,10 @@ int frame_handler( void* that, const frame_header& frame )
 				
 				case req_open:
 					err = open( s, request_id, r );
+					break;
+				
+				case req_close:
+					err = close( s, request_id, r );
 					break;
 				
 				case req_link:
