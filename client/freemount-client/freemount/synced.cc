@@ -142,6 +142,22 @@ namespace freemount
 		return chosen_fd;
 	}
 	
+	void synced_close( int in, int out, int fd )
+	{
+		send_close_request( out, fd );
+		
+		request_status req( out );
+		
+		const char* path = "<close>";
+		
+		const int n = wait_for_result( req, in, &frame_handler, path );
+		
+		if ( n < 0 )
+		{
+			throw path_error( path, -n );
+		}
+	}
+	
 	void synced_link( int          in,
 	                  int          out,
 	                  const char*  src_path,
