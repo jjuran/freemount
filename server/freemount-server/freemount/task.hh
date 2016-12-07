@@ -42,8 +42,6 @@ namespace freemount
 			bool done() const  { return its_status >= 0; }
 			
 			int result() const;
-			
-			uint8_t req_id() const  { return r_id; }
 	};
 	
 	void begin_task( req_func f, session& s, uint8_t r_id );
