@@ -497,7 +497,13 @@ int frame_handler( void* that, const frame_header& frame )
 	switch ( frame.type )
 	{
 		case Frame_arg_path:
-			(r.path.empty() ? r.path : r.data).assign( data, get_size( frame ) );
+			{
+				plus::string& s = r.path.empty() ? r.path : r.data;
+				
+				s.assign( data, get_size( frame ) );
+				
+				fprintf( stderr, "Path: \"%s\"\n", s.c_str() );
+			}
 			break;
 		
 		case Frame_arg_fd:
