@@ -46,8 +46,6 @@ namespace freemount
 	
 	void begin_task( req_func f, session& s, uint8_t r_id );
 	
-	void check_tasks();
-	
 }
 
 #endif

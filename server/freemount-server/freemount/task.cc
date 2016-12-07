@@ -12,6 +12,7 @@
 #include "poseven/types/errno_t.hh"
 
 // freemount
+#include "freemount/request.hh"
 #include "freemount/response.hh"
 #include "freemount/session.hh"
 
@@ -73,47 +74,11 @@ void* request_task::start( void* param )
 	return NULL;
 }
 
-static request_task* request_tasks[ 256 ];
-
-static uint8_t n_request_tasks = 0;
-
 void begin_task( req_func f, session& s, uint8_t r_id )
 {
-	request_tasks[ n_request_tasks ] = new request_task( f, s, r_id );
+	request& r = *s.get_request( r_id );
 	
-	++n_request_tasks;
-}
-
-static
-void end_task( uint8_t i )
-{
-	delete request_tasks[ i ];
-	
-	request_tasks[ i ] = request_tasks[ --n_request_tasks ];
-}
-
-static
-void check_task( request_task& task, uint8_t i )
-{
-	if ( task.done() )
-	{
-		session& s = task.s;
-		uint8_t id = task.r_id;
-		
-		end_task( i );
-		
-		s.set_request( id, NULL );
-	}
-}
-
-void check_tasks()
-{
-	for ( int i = n_request_tasks - 1;  i >= 0;  --i )
-	{
-		request_task* task = request_tasks[ i ];
-		
-		check_task( *task, i );
-	}
+	r.task = new request_task( f, s, r_id );
 }
 
 }  // namespace freemount

@@ -15,6 +15,9 @@
 // freemount
 #include "freemount/frame.hh"
 
+// freemount-server
+#include "freemount/task.hh"
+
 
 namespace freemount
 {
@@ -31,7 +34,16 @@ namespace freemount
 		
 		int fd;
 		
+		request_task* task;
+		
 		request( request_type type = req_none );
+		
+		~request();
+		
+		private:
+			// non-copyable
+			request           ( const request& );
+			request& operator=( const request& );
 	};
 	
 	inline
@@ -40,8 +52,15 @@ namespace freemount
 		type( type ),
 		n( -1 ),
 		offset( -1 ),
-		fd( -1 )
+		fd( -1 ),
+		task()
 	{
+	}
+	
+	inline
+	request::~request()
+	{
+		delete task;
 	}
 	
 }

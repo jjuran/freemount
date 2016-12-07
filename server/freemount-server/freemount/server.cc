@@ -392,7 +392,7 @@ int frame_handler( void* that, const frame_header& frame )
 {
 	session& s = *(session*) that;
 	
-	check_tasks();
+	s.check_tasks();
 	
 	switch ( frame.type )
 	{

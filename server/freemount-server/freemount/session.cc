@@ -22,4 +22,24 @@ namespace freemount
 	{
 	}
 	
+	void session::check_tasks()
+	{
+		for ( int i = 0;  i < n_requests;  ++i )
+		{
+			if ( request* r = get_request( i ) )
+			{
+				if ( request_task* task = r->task )
+				{
+					if ( task->done() )
+					{
+						delete r->task;
+						r->task = NULL;
+						
+						set_request( i, NULL );
+					}
+				}
+			}
+		}
+	}
+
 }

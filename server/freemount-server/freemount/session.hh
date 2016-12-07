@@ -150,6 +150,8 @@ namespace freemount
 				
 				its_open_files[ i ] = h;
 			}
+			
+			void check_tasks();
 	};
 	
 }
