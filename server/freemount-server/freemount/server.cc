@@ -321,7 +321,10 @@ int start_read( session& s, uint8_t r_id, const request& r )
 
 enum arg_mask
 {
-	Mask_req    = (1 << Frame_request) | (1 << Frame_submit),
+	Mask_req    = (1 << Frame_request)
+	            | (1 << Frame_submit)
+	            | (1 << Frame_cancel),
+	
 	Mask_path   = 1 << Frame_arg_path,
 	Mask_fd     = 1 << Frame_arg_fd,
 	
@@ -535,6 +538,21 @@ int frame_handler( void* that, const frame_header& frame )
 			s.set_request( request_id, NULL );
 			
 			send_response( s.queue(), err, request_id );
+			break;
+		
+		case Frame_cancel:
+			if ( request* r = s.get_request( request_id ) )
+			{
+				if ( request_task* task = r->task )
+				{
+					task->cancel();
+				}
+				
+				s.set_request( request_id, NULL );
+				
+				send_response( s.queue(), -ECANCELED, request_id );
+			}
+			
 			break;
 		
 		default:

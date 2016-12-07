@@ -44,6 +44,8 @@ namespace freemount
 			bool done() const  { return its_status >= 0; }
 			
 			int result() const;
+			
+			void cancel()  { its_thread.cancel(); }
 	};
 	
 	void begin_task( req_func f, session& s, uint8_t r_id );
