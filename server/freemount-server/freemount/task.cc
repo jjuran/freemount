@@ -5,9 +5,6 @@
 
 #include "freemount/task.hh"
 
-// POSIX
-#include <pthread.h>
-
 // poseven
 #include "poseven/types/errno_t.hh"
 
@@ -35,17 +32,12 @@ request_task::request_task( req_func f, class session& s, uint8_t r_id )
 {
 	its_status = -1;
 	
-	int error = pthread_create( &its_thread, NULL, &start, this );
-	
-	if ( error )
-	{
-		p7::throw_errno( error );
-	}
+	its_thread.create( &start, this );
 }
 
 request_task::~request_task()
 {
-	pthread_join( its_thread, NULL );
+	its_thread.join();
 }
 
 void* request_task::start( void* param )

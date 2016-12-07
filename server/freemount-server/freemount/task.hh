@@ -6,11 +6,11 @@
 #ifndef FREEMOUNT_TASK_HH
 #define FREEMOUNT_TASK_HH
 
-// POSIX
-#include <pthread.h>
-
 // Standard C
 #include <stdint.h>
+
+// poseven
+#include "poseven/types/thread.hh"
 
 
 namespace freemount
@@ -24,6 +24,8 @@ namespace freemount
 	class request_task
 	{
 		public:
+			typedef poseven::thread p7_thread;
+			
 			const req_func  f;
 			session&        s;
 			const uint8_t   r_id;
@@ -31,7 +33,7 @@ namespace freemount
 		private:
 			int        its_status;  // -1 until done, then 0 or errno
 			int        its_result;
-			pthread_t  its_thread;
+			p7_thread  its_thread;
 			
 			static void* start( void* param );
 		
