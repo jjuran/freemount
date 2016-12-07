@@ -16,6 +16,8 @@
 namespace freemount
 {
 	
+	void cancel_request( int fd, uint8_t r_id );
+	
 	void send_path_request( int          fd,
 	                        const char*  path,
 	                        uint32_t     size,

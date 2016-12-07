@@ -25,6 +25,21 @@ namespace freemount
 		queue_empty( queue, Frame_submit, r_id );
 	}
 	
+	static inline
+	void queue_cancel( send_queue& queue, uint8_t r_id )
+	{
+		queue_empty( queue, Frame_cancel, r_id );
+	}
+	
+	void cancel_request( int fd, uint8_t r_id )
+	{
+		send_queue queue( fd );
+		
+		queue_cancel( queue, r_id );
+		
+		queue.flush();
+	}
+	
 	void send_path_request( int          fd,
 	                        const char*  path,
 	                        uint32_t     size,
