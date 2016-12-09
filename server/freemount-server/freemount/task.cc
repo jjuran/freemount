@@ -7,6 +7,7 @@
 
 // poseven
 #include "poseven/types/errno_t.hh"
+#include "poseven/types/thread.hh"
 
 // freemount
 #include "freemount/request.hh"
@@ -37,6 +38,7 @@ request_task::request_task( req_func f, class session& s, uint8_t r_id )
 
 request_task::~request_task()
 {
+	its_thread.cancel();
 	its_thread.join();
 }
 
@@ -58,6 +60,8 @@ void* request_task::start( void* param )
 	{
 		task.its_status = err;
 	}
+	
+	poseven::thread::testcancel();
 	
 	const int err = task.result();
 	

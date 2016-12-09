@@ -10,6 +10,9 @@
 #include <unistd.h>
 #include <sys/select.h>
 
+// poseven
+#include "poseven/types/thread.hh"
+
 
 namespace freemount
 {
@@ -21,6 +24,8 @@ namespace freemount
 		
 		while ( n_bytes < n )
 		{
+			poseven::thread::testcancel();
+			
 			ssize_t n_written = write( fd, buffer, n - n_bytes );
 			
 			if ( n_written >= 0 )

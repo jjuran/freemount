@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 // Standard C
+#include <signal.h>
 #include <stdlib.h>
 
 // command
@@ -15,6 +16,9 @@
 
 // gear
 #include "gear/parse_decimal.hh"
+
+// poseven
+#include "poseven/types/thread.hh"
 
 // vfs
 #include "vfs/node.hh"
@@ -114,9 +118,36 @@ char* const* get_options( char* const* argv )
 	return argv;
 }
 
+static
+void empty_signal_handler( int )
+{
+	// empty
+}
+
+static
+void install_empty_signal_handler( int signum )
+{
+	struct sigaction action = { 0 };
+	action.sa_handler = &empty_signal_handler;
+	
+	int nok = sigaction( signum, &action, NULL );
+	
+	if ( nok )
+	{
+		abort();
+	}
+}
+
+const int thread_interrupt_signal = SIGUSR1;
+
 int main( int argc, char* const* argv )
 {
+	using poseven::thread;
+	
 	char *const *args = get_options( argv );
+	
+	install_empty_signal_handler( thread_interrupt_signal );
+	thread::set_interrupt_signal( thread_interrupt_signal );
 	
 	session s( STDOUT_FILENO, root(), root() );
 	
