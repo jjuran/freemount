@@ -20,9 +20,11 @@ namespace freemount {
 namespace p7 = poseven;
 
 
-int request_task::result() const
+bool request_task::done() const
 {
-	return its_status > 0 ? -its_status : its_result;
+	p7::lock k( its_mutex );
+	
+	return its_status >= 0;
 }
 
 request_task::request_task( req_func f, class session& s, uint8_t r_id )
@@ -50,22 +52,24 @@ void* request_task::start( void* param )
 	session& s = task.s;
 	request& r = *s.get_request( id );
 	
+	int result;
+	
 	try
 	{
-		task.its_result = task.f( s, id, r );
-		
-		task.its_status = 0;
+		result = task.f( s, id, r );
 	}
 	catch ( const p7::errno_t& err )
 	{
-		task.its_status = err;
+		result = -err;
 	}
 	
 	poseven::thread::testcancel();
 	
-	const int err = task.result();
+	send_response( s.queue(), result, id );
 	
-	send_response( s.queue(), err, id );
+	p7::lock k( task.its_mutex );
+	
+	task.its_status = 0;
 	
 	return NULL;
 }

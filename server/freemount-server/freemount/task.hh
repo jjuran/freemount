@@ -24,6 +24,7 @@ namespace freemount
 	class request_task
 	{
 		public:
+			typedef poseven::mutex  m;
 			typedef poseven::thread p7_thread;
 			
 			const req_func  f;
@@ -32,7 +33,7 @@ namespace freemount
 		
 		private:
 			int        its_status;  // -1 until done, then 0 or errno
-			int        its_result;
+			mutable m  its_mutex;
 			p7_thread  its_thread;
 			
 			static void* start( void* param );
@@ -41,9 +42,7 @@ namespace freemount
 			request_task( req_func f, class session& s, uint8_t r_id );
 			~request_task();
 			
-			bool done() const  { return its_status >= 0; }
-			
-			int result() const;
+			bool done() const;
 			
 			void cancel()  { its_thread.cancel(); }
 	};
