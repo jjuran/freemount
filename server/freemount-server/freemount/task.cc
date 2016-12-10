@@ -50,6 +50,8 @@ void* request_task::start( void* param )
 	session& s = task.s;
 	request& r = *s.get_request( id );
 	
+	int result;
+	
 	try
 	{
 		task.its_result = task.f( s, id, r );
@@ -63,9 +65,9 @@ void* request_task::start( void* param )
 	
 	poseven::thread::testcancel();
 	
-	const int err = task.result();
+	result = task.result();
 	
-	send_response( s.queue(), err, id );
+	send_response( s.queue(), result, id );
 	
 	return NULL;
 }
