@@ -10,6 +10,8 @@
 namespace freemount
 {
 	
+	const char** make_unix_connector( const char* socket, const char* dir = 0 );
+	
 	/*
 		Input:  A URI for a server address, or ":" or NULL for loopback.
 		        Non-loopback strings may be modified and referenced in the

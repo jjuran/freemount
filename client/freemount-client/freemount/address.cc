@@ -26,6 +26,14 @@ namespace freemount
 	static const char* ussh_argv[] = { NULL, "ussh", "--", NULL, "bin/freemountd", "-qu", "--root", ".", NULL };
 	
 	
+	const char** make_unix_connector( const char* socket, const char* dir )
+	{
+		uunix_argv[ 0 ] = dir;
+		uunix_argv[ 2 ] = socket;
+		
+		return uunix_argv + 1;
+	}
+	
 	static
 	const char** parse_mnt_hostpath( char* hostpath )
 	{
