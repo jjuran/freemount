@@ -6,8 +6,14 @@
 // POSIX
 #include <unistd.h>
 
+// Standard C
+#include <stdlib.h>
+
 // more-posix
 #include "more/perror.hh"
+
+// jack
+#include "jack/interface.hh"
 
 // unet-connect
 #include "unet/connect.hh"
@@ -51,15 +57,25 @@ int main( int argc, char** argv )
 {
 	const char** connector_argv = NULL;
 	
-	if ( argc < 2 )
+	if ( const char* gui_path = getenv( "GUI" ) )
 	{
-		write( STDERR_FILENO, STR_LEN( USAGE ) );
-		return 2;
+		jack::interface ji = gui_path;
+		
+		connector_argv = make_unix_connector( ji.socket_path() );
 	}
 	
-	char* address = argv[ 1 ];
-	
-	connector_argv = parse_address( address );
+	if ( connector_argv == NULL )
+	{
+		if ( argc < 2 )
+		{
+			write( STDERR_FILENO, STR_LEN( USAGE ) );
+			return 2;
+		}
+		
+		char* address = argv[ 1 ];
+		
+		connector_argv = parse_address( address );
+	}
 	
 	if ( connector_argv == NULL )
 	{
