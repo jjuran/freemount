@@ -17,11 +17,13 @@
 #include "freemount/synced.hh"
 
 
+#define PROGRAM "forge-test"
+
 #define TEST_PORT  "/gui/port/test"
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
-#define USAGE  "usage: forge-test <Freemount address>\n"
+#define USAGE  "usage: " PROGRAM " <Freemount address>\n"
 
 
 using namespace freemount;
@@ -58,6 +60,7 @@ int main( int argc, char** argv )
 	
 	if ( connector_argv == NULL )
 	{
+		write( STDERR_FILENO, STR_LEN( PROGRAM ": malformed address\n" ) );
 		return 2;
 	}
 	
@@ -81,7 +84,7 @@ int main( int argc, char** argv )
 	}
 	catch ( const path_error& e )
 	{
-		more::perror( "forge-test", e.path.c_str(), e.error );
+		more::perror( PROGRAM, e.path.c_str(), e.error );
 		return 1;
 	}
 	
