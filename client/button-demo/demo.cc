@@ -164,6 +164,8 @@ void read_clicks( const char* path, size_t path_size )
 
 int main( int argc, char** argv )
 {
+	const char** connector_argv = NULL;
+	
 	if ( argc < 2 )
 	{
 		write( STDERR_FILENO, STR_LEN( USAGE ) );
@@ -172,7 +174,7 @@ int main( int argc, char** argv )
 	
 	char* address = argv[ 1 ];
 	
-	const char** connector_argv = parse_address( address );
+	connector_argv = parse_address( address );
 	
 	if ( connector_argv == NULL )
 	{
