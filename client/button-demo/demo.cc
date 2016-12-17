@@ -176,6 +176,7 @@ int main( int argc, char** argv )
 	
 	if ( connector_argv == NULL )
 	{
+		write( STDERR_FILENO, STR_LEN( PROGRAM ": malformed address\n" ) );
 		return 2;
 	}
 	
