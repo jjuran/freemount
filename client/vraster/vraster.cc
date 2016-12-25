@@ -254,6 +254,15 @@ int main( int argc, char** argv )
 			PUT( PORT "/v/.~stride", (const char*) &stride, sizeof stride );
 		}
 		
+		try
+		{
+			PUT( PORT "/compositing", "1" "\n", 2 );
+		}
+		catch ( ... )
+		{
+			// This existence of this property is platform-dependent.
+		}
+		
 		PUT( PORT "/procid", "4" "\n", 2 );  // noGrow
 		PUT( PORT "/.~title",  screen_path, strlen( screen_path ) );
 		PUT( PORT "/.~size",   (const char*) window_size, sizeof window_size );
