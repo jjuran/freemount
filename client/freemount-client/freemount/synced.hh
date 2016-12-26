@@ -74,6 +74,25 @@ namespace freemount
 		                     data.data(), data.size() );
 	}
 	
+	void synced_pwrite( int          in,
+	                    int          out,
+	                    const char*  path,
+	                    uint32_t     path_size,
+	                    const char*  data,
+	                    uint32_t     data_size,
+	                    uint32_t     offset );
+	
+	inline
+	void synced_pwrite( int                  in,
+	                    int                  out,
+	                    const plus::string&  path,
+	                    const plus::string&  data,
+	                    uint32_t             offset )
+	{
+		synced_pwrite( in, out, path.data(), path.size(),
+		                        data.data(), data.size(), offset );
+	}
+	
 	int synced_open( int          in,
 	                 int          out,
 	                 int          chosen_fd,
