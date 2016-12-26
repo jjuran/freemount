@@ -58,6 +58,14 @@ namespace freemount
 	                         uint32_t     data_size,
 	                         uint8_t      r_id = 0 );
 	
+	void send_pwrite_request( int          fd,
+	                          uint32_t     offset,
+	                          const char*  path,
+	                          uint32_t     path_size,
+	                          const char*  data,
+	                          uint32_t     data_size,
+	                          uint8_t      r_id = 0 );
+	
 	void send_open_request( int          fd,
 	                        int          chosen_fd,
 	                        const char*  path,
