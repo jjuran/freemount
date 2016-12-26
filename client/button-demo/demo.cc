@@ -171,7 +171,7 @@ int main( int argc, char** argv )
 	
 	if ( const char* gui_path = getenv( "GUI" ) )
 	{
-		jack::interface ji = gui_path;
+		static jack::interface ji = gui_path;
 		
 		connector_argv = make_unix_connector( ji.socket_path() );
 	}
