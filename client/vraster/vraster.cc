@@ -54,6 +54,8 @@ namespace p7 = poseven;
 
 using namespace freemount;
 
+const size_t max_payload = uint16_t( -1 );
+
 
 enum
 {
@@ -86,12 +88,18 @@ static raster::raster_load loaded_raster;
 #define PUT( path, data, size )  \
 	synced_put( protocol_in, protocol_out, STR_LEN( path ), data, size )
 
-#define PUT_DATA( path, data, size )  \
-	synced_pwrite( protocol_in, protocol_out, STR_LEN( path ), data, size, 0 )
+#define PWRITE( path, data, size, off )  \
+	synced_pwrite( protocol_in, protocol_out, STR_LEN( path ), data, size, off )
 
 #define LINK( src, dst )  \
 	synced_link( protocol_in, protocol_out, STR_LEN( src ), STR_LEN( dst ) )
 
+
+static inline
+size_t min( size_t a, size_t b )
+{
+	return b < a ? b : a;
+}
 
 static
 void report_error( const char* path, uint32_t err )
@@ -209,6 +217,9 @@ int main( int argc, char** argv )
 	
 	const char* base = (char*) loaded_raster.addr;
 	
+	const size_t chunk_height = min( desc.height, max_payload / desc.stride );
+	
+	const size_t chunk_size = chunk_height * desc.stride;
 	const size_t image_size = desc.height * desc.stride;
 	
 	short stride = desc.stride;
@@ -248,7 +259,20 @@ int main( int argc, char** argv )
 		PUT( PORT "/.~size",   (const char*) window_size, sizeof window_size );
 		PUT( PORT "/v/.~size", (const char*) raster_size, sizeof raster_size );
 		
-		PUT_DATA( PORT "/v/data", base, image_size );
+		size_t n_written = 0;
+		
+		while ( n_written < image_size - chunk_size )
+		{
+			PWRITE( PORT "/v/data", base, chunk_size, n_written );
+			
+			n_written += chunk_size;
+			base      += chunk_size;
+		}
+		
+		if ( size_t remainder = image_size - n_written )
+		{
+			PWRITE( PORT "/v/data", base, remainder, n_written );
+		}
 		
 		int window_fd = OPEN( PORT "/window" );
 	}
