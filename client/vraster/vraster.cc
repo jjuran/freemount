@@ -47,7 +47,7 @@
 #define USAGE  "usage: " "GUI=<gui-path> " PROGRAM " <screen-path>\n" \
 "       where gui-path is a FORGE jack and screen-path is a raster file\n"
 
-#define NOT_BLACK_ON_WHITE  "only black-on-white rasters are supported"
+#define NOT_BLACK_ON_WHITE  "only grayscale 'paint' rasters are supported"
 
 
 namespace p7 = poseven;
@@ -201,12 +201,6 @@ int main( int argc, char** argv )
 	
 	const raster::raster_desc& desc = loaded_raster.meta->desc;
 	
-	if ( desc.weight != 1 )
-	{
-		write( STDERR_FILENO, STR_LEN( PROGRAM ": " NOT_BLACK_ON_WHITE "\n" ) );
-		return 1;
-	}
-	
 	if ( desc.model != raster::Model_grayscale_paint )
 	{
 		write( STDERR_FILENO, STR_LEN( PROGRAM ": " NOT_BLACK_ON_WHITE "\n" ) );
@@ -216,6 +210,11 @@ int main( int argc, char** argv )
 	const char* base = (char*) loaded_raster.addr;
 	
 	const size_t image_size = desc.height * desc.stride;
+	
+	short stride = desc.stride;
+	char  depth  = desc.weight;
+	
+	char grayscale = 1;
 	
 	short raster_size[ 2 ] = { desc.height, desc.width };
 	short window_size[ 2 ] = { desc.height, desc.width };
@@ -230,7 +229,19 @@ int main( int argc, char** argv )
 	{
 		int lock_fd = OPEN( PORT "/lock" );
 		
-		LINK( "/gui/new/bitmap", PORT "/view" );
+		if ( desc.weight == 1 )
+		{
+			LINK( "/gui/new/bitmap", PORT "/view" );
+		}
+		else
+		{
+			LINK( "/gui/new/gworld", PORT "/view" );
+			
+			PUT( PORT "/v/.~depth",     &depth,     sizeof depth     );
+			PUT( PORT "/v/.~grayscale", &grayscale, sizeof grayscale );
+			
+			PUT( PORT "/v/.~stride", (const char*) &stride, sizeof stride );
+		}
 		
 		PUT( PORT "/procid", "4" "\n", 2 );  // noGrow
 		PUT( PORT "/.~title",  screen_path, strlen( screen_path ) );
