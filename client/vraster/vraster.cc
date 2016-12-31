@@ -15,6 +15,12 @@
 // more-posix
 #include "more/perror.hh"
 
+// command
+#include "command/get_option.hh"
+
+// gear
+#include "gear/parse_decimal.hh"
+
 // jack
 #include "jack/interface.hh"
 
@@ -43,6 +49,20 @@ namespace p7 = poseven;
 
 using namespace freemount;
 
+
+enum
+{
+	Opt_magnify = 'x',
+};
+
+static command::option options[] =
+{
+	{ "magnify", Opt_magnify, command::Param_required },
+	{ NULL }
+};
+
+
+static unsigned magnification;
 
 static int protocol_in  = -1;
 static int protocol_out = -1;
@@ -102,9 +122,44 @@ void read_screen()
 	}
 }
 
+static
+char* const* get_options( char** argv )
+{
+	int opt;
+	
+	++argv;  // skip arg 0
+	
+	while ( (opt = command::get_option( (char* const**) &argv, options )) > 0 )
+	{
+		using command::global_result;
+		using gear::parse_unsigned_decimal;
+		
+		switch ( opt )
+		{
+			case Opt_magnify:
+				magnification = parse_unsigned_decimal( global_result.param );
+				break;
+			
+			default:
+				break;
+		}
+	}
+	
+	return argv;
+}
+
 int main( int argc, char** argv )
 {
-	if ( argc != 2 )
+	if ( argc == 0 )
+	{
+		return 0;
+	}
+	
+	char* const* args = get_options( argv );
+	
+	int argn = argc - (args - argv);
+	
+	if ( argn != 1 )
 	{
 		write( STDERR_FILENO, STR_LEN( USAGE ) );
 		return 2;
@@ -123,7 +178,7 @@ int main( int argc, char** argv )
 	
 	const char** connector_argv = make_unix_connector( ji.socket_path() );
 	
-	const char* screen_path = argv[ 1 ];
+	const char* screen_path = args[ 0 ];
 	
 	open_screen( screen_path );
 	read_screen();
@@ -144,7 +199,14 @@ int main( int argc, char** argv )
 	protocol_in  = the_connection.get_input ();
 	protocol_out = the_connection.get_output();
 	
-	const short size[ 2 ] = { 342, 512 };
+	short raster_size[ 2 ] = { 342, 512 };
+	short window_size[ 2 ] = { 342, 512 };
+	
+	if ( magnification > 1  && magnification <= 16 )
+	{
+		window_size[ 0 ] *= magnification;
+		window_size[ 1 ] *= magnification;
+	}
 	
 	try
 	{
@@ -154,8 +216,8 @@ int main( int argc, char** argv )
 		
 		PUT( PORT "/procid", "4" "\n", 2 );  // noGrow
 		PUT( PORT "/.~title",  screen_path, strlen( screen_path ) );
-		PUT( PORT "/.~size",   (const char*) size, sizeof size );
-		PUT( PORT "/v/.~size", (const char*) size, sizeof size );
+		PUT( PORT "/.~size",   (const char*) window_size, sizeof window_size );
+		PUT( PORT "/v/.~size", (const char*) raster_size, sizeof raster_size );
 		
 		PUT_DATA( PORT "/v/bits", screen_buffer, buffer_size );
 		
