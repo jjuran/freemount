@@ -49,6 +49,7 @@
 
 #define NO_GRAYSCALE_LIGHT  "grayscale 'light' rasters aren't yet supported"
 
+#define ERROR( msg )  write( STDERR_FILENO, STR_LEN( PROGRAM ": " msg "\n" ) )
 
 namespace p7 = poseven;
 
@@ -69,7 +70,8 @@ static command::option options[] =
 };
 
 
-static unsigned magnification;
+static unsigned x_numerator   = 1;
+static unsigned x_denominator = 1;
 
 static int protocol_in  = -1;
 static int protocol_out = -1;
@@ -146,7 +148,27 @@ char* const* get_options( char** argv )
 		switch ( opt )
 		{
 			case Opt_magnify:
-				magnification = parse_unsigned_decimal( global_result.param );
+				const char* p;
+				p = global_result.param;
+				
+				x_numerator = parse_unsigned_decimal( &p );
+				
+				if ( x_numerator == 0 )
+				{
+					ERROR( "0x magnification is unimplemented" );
+					exit( 2 );
+				}
+				
+				if ( *p++ == '/' )
+				{
+					x_denominator = parse_unsigned_decimal( &p );
+					
+					if ( x_denominator == 0 )
+					{
+						ERROR( "division by zero is forbidden" );
+						exit( 2 );
+					}
+				}
 				break;
 			
 			default:
@@ -230,10 +252,16 @@ int main( int argc, char** argv )
 	short raster_size[ 2 ] = { desc.height, desc.width };
 	short window_size[ 2 ] = { desc.height, desc.width };
 	
-	if ( magnification > 1  && magnification <= 16 )
+	if ( x_numerator > 1  &&  x_numerator <= 16 )
 	{
-		window_size[ 0 ] *= magnification;
-		window_size[ 1 ] *= magnification;
+		window_size[ 0 ] *= x_numerator;
+		window_size[ 1 ] *= x_numerator;
+	}
+	
+	if ( x_denominator > 1 )
+	{
+		window_size[ 0 ] /= x_denominator;
+		window_size[ 1 ] /= x_denominator;
 	}
 	
 	try
