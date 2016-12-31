@@ -60,8 +60,8 @@ static char screen_buffer[ buffer_size ];
 #define OPEN( path )  \
 	synced_open( protocol_in, protocol_out, next_fd++, STR_LEN( path ) )
 
-#define PUT( path, data )  \
-	synced_put( protocol_in, protocol_out, STR_LEN( path ), STR_LEN( data ) )
+#define PUT( path, data, size )  \
+	synced_put( protocol_in, protocol_out, STR_LEN( path ), data, size )
 
 #define PUT_DATA( path, data, size )  \
 	synced_pwrite( protocol_in, protocol_out, STR_LEN( path ), data, size, 0 )
@@ -144,22 +144,18 @@ int main( int argc, char** argv )
 	protocol_in  = the_connection.get_input ();
 	protocol_out = the_connection.get_output();
 	
+	const short size[ 2 ] = { 342, 512 };
+	
 	try
 	{
 		int lock_fd = OPEN( PORT_VRASTER "/lock" );
 		
-		PUT( PORT_VRASTER "/size",   "512x342" "\n" );
-		PUT( PORT_VRASTER "/procid", "4"       "\n" );  // noGrow
-		
-		synced_put( protocol_in,
-		            protocol_out,
-		            STR_LEN( PORT_VRASTER "/.~title" ),
-		            screen_path,
-		            strlen( screen_path ) );
-		
 		LINK( "/gui/new/bitmap",   PORT_VRASTER "/view" );
 		
-		PUT( PORT_VRASTER "/v/size", "512x342" "\n" );
+		PUT( PORT_VRASTER "/procid", "4" "\n", 2 );  // noGrow
+		PUT( PORT_VRASTER "/.~title",  screen_path, strlen( screen_path ) );
+		PUT( PORT_VRASTER "/.~size",   (const char*) size, sizeof size );
+		PUT( PORT_VRASTER "/v/.~size", (const char*) size, sizeof size );
 		
 		PUT_DATA( PORT_VRASTER "/v/bits", screen_buffer, buffer_size );
 		
