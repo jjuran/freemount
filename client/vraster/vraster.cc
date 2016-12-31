@@ -31,7 +31,7 @@
 
 #define PROGRAM  "vraster"
 
-#define PORT_VRASTER  "/gui/port/vraster"
+#define PORT  "/gui/port/vraster"
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
@@ -148,18 +148,18 @@ int main( int argc, char** argv )
 	
 	try
 	{
-		int lock_fd = OPEN( PORT_VRASTER "/lock" );
+		int lock_fd = OPEN( PORT "/lock" );
 		
-		LINK( "/gui/new/bitmap",   PORT_VRASTER "/view" );
+		LINK( "/gui/new/bitmap", PORT "/view" );
 		
-		PUT( PORT_VRASTER "/procid", "4" "\n", 2 );  // noGrow
-		PUT( PORT_VRASTER "/.~title",  screen_path, strlen( screen_path ) );
-		PUT( PORT_VRASTER "/.~size",   (const char*) size, sizeof size );
-		PUT( PORT_VRASTER "/v/.~size", (const char*) size, sizeof size );
+		PUT( PORT "/procid", "4" "\n", 2 );  // noGrow
+		PUT( PORT "/.~title",  screen_path, strlen( screen_path ) );
+		PUT( PORT "/.~size",   (const char*) size, sizeof size );
+		PUT( PORT "/v/.~size", (const char*) size, sizeof size );
 		
-		PUT_DATA( PORT_VRASTER "/v/bits", screen_buffer, buffer_size );
+		PUT_DATA( PORT "/v/bits", screen_buffer, buffer_size );
 		
-		int window_fd = OPEN( PORT_VRASTER "/window" );
+		int window_fd = OPEN( PORT "/window" );
 	}
 	catch ( const path_error& e )
 	{
