@@ -47,7 +47,7 @@
 #define USAGE  "usage: " "GUI=<gui-path> " PROGRAM " <screen-path>\n" \
 "       where gui-path is a FORGE jack and screen-path is a raster file\n"
 
-#define NOT_BLACK_ON_WHITE  "only grayscale 'paint' rasters are supported"
+#define NO_GRAYSCALE_LIGHT  "grayscale 'light' rasters aren't yet supported"
 
 
 namespace p7 = poseven;
@@ -209,9 +209,9 @@ int main( int argc, char** argv )
 	
 	const raster::raster_desc& desc = loaded_raster.meta->desc;
 	
-	if ( desc.model != raster::Model_grayscale_paint )
+	if ( desc.model == raster::Model_grayscale_light )
 	{
-		write( STDERR_FILENO, STR_LEN( PROGRAM ": " NOT_BLACK_ON_WHITE "\n" ) );
+		write( STDERR_FILENO, STR_LEN( PROGRAM ": " NO_GRAYSCALE_LIGHT "\n" ) );
 		return 1;
 	}
 	
@@ -225,7 +225,7 @@ int main( int argc, char** argv )
 	short stride = desc.stride;
 	char  depth  = desc.weight;
 	
-	char grayscale = 1;
+	char grayscale = desc.model == raster::Model_grayscale_paint;
 	
 	short raster_size[ 2 ] = { desc.height, desc.width };
 	short window_size[ 2 ] = { desc.height, desc.width };
