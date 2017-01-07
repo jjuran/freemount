@@ -249,6 +249,8 @@ int main( int argc, char** argv )
 	
 	char grayscale = desc.model == raster::Model_grayscale_paint;
 	
+	char little_endian = (bool) *(uint16_t*) (base + loaded_raster.size - 4);
+	
 	short raster_size[ 2 ] = { desc.height, desc.width };
 	short window_size[ 2 ] = { desc.height, desc.width };
 	
@@ -275,6 +277,8 @@ int main( int argc, char** argv )
 		else
 		{
 			LINK( "/gui/new/gworld", PORT "/view" );
+			
+			PUT( PORT "/v/.~little-endian", &little_endian, sizeof (char) );
 			
 			PUT( PORT "/v/.~depth",     &depth,     sizeof depth     );
 			PUT( PORT "/v/.~grayscale", &grayscale, sizeof grayscale );
