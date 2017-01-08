@@ -247,6 +247,11 @@ int main( int argc, char** argv )
 	short stride = desc.stride;
 	char  depth  = desc.weight;
 	
+	if ( depth == 16  &&  desc.model == raster::Model_xRGB )
+	{
+		depth = 15;
+	}
+	
 	char grayscale = desc.model == raster::Model_grayscale_paint;
 	
 	char little_endian = (bool) *(uint16_t*) (base + loaded_raster.size - 4);
