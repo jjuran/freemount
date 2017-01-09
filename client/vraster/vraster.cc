@@ -254,6 +254,8 @@ int main( int argc, char** argv )
 	
 	char grayscale = desc.model == raster::Model_grayscale_paint;
 	
+	char alpha_last = (desc.model & 1) == (raster::Model_RGBx & 1);
+	
 	char little_endian = (bool) *(uint16_t*) (base + loaded_raster.size - 4);
 	
 	short raster_size[ 2 ] = { desc.height, desc.width };
@@ -283,6 +285,7 @@ int main( int argc, char** argv )
 		{
 			LINK( "/gui/new/gworld", PORT "/view" );
 			
+			PUT( PORT "/v/.~alpha-last", &alpha_last, sizeof (char) );
 			PUT( PORT "/v/.~little-endian", &little_endian, sizeof (char) );
 			
 			PUT( PORT "/v/.~depth",     &depth,     sizeof depth     );
