@@ -61,18 +61,21 @@ const size_t max_payload = uint16_t( -1 );
 enum
 {
 	Opt_gui     = 'g',
+	Opt_mnt     = 'm',
 	Opt_magnify = 'x',
 };
 
 static command::option options[] =
 {
 	{ "gui",     Opt_gui,     command::Param_required },
+	{ "mnt",     Opt_mnt,     command::Param_required },
 	{ "magnify", Opt_magnify, command::Param_required },
 	{ NULL }
 };
 
 
-static const char* gui_path;
+static const char*  gui_path;
+static char*        mnt_path;
 
 static unsigned x_numerator   = 1;
 static unsigned x_denominator = 1;
@@ -155,6 +158,10 @@ char* const* get_options( char** argv )
 				gui_path = global_result.param;
 				break;
 			
+			case Opt_mnt:
+				mnt_path = global_result.param;
+				break;
+			
 			case Opt_magnify:
 				const char* p;
 				p = global_result.param;
@@ -204,21 +211,43 @@ int main( int argc, char** argv )
 		return 2;
 	}
 	
-	if ( gui_path == NULL )
-	{
-		gui_path = getenv( "GUI" );
-	}
-	
-	if ( gui_path == NULL )
+	if ( gui_path  &&  mnt_path )
 	{
 		write( STDERR_FILENO, STR_LEN( PROGRAM ": "
-			"--gui option or GUI environment variable required\n" ) );
+			"--gui and --mnt are mutually exclusive\n" ) );
 		return 2;
 	}
 	
-	jack::interface ji = gui_path;
+	const char** connector_argv = NULL;
 	
-	const char** connector_argv = make_unix_connector( ji.socket_path() );
+	if ( mnt_path != NULL )
+	{
+		connector_argv = parse_address( mnt_path );
+		
+		if ( connector_argv == NULL )
+		{
+			write( STDERR_FILENO, STR_LEN( PROGRAM ": malformed address\n" ) );
+			return 2;
+		}
+	}
+	else
+	{
+		if ( gui_path == NULL )
+		{
+			gui_path = getenv( "GUI" );
+		}
+		
+		if ( gui_path == NULL )
+		{
+			write( STDERR_FILENO, STR_LEN( PROGRAM ": "
+				"one of --mnt, --gui, or $GUI required\n" ) );
+			return 2;
+		}
+		
+		static jack::interface ji = gui_path;
+		
+		connector_argv = make_unix_connector( ji.socket_path() );
+	}
 	
 	const char* screen_path = args[ 0 ];
 	
