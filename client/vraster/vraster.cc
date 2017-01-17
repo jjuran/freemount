@@ -194,6 +194,25 @@ char* const* get_options( char** argv )
 	return argv;
 }
 
+static
+void write_image( const char* base, size_t image_size, size_t chunk_size )
+{
+	size_t n_written = 0;
+	
+	while ( n_written < image_size - chunk_size )
+	{
+		PWRITE( PORT "/v/data", base, chunk_size, n_written );
+		
+		n_written += chunk_size;
+		base      += chunk_size;
+	}
+	
+	if ( size_t remainder = image_size - n_written )
+	{
+		PWRITE( PORT "/v/data", base, remainder, n_written );
+	}
+}
+
 int main( int argc, char** argv )
 {
 	if ( argc == 0 )
@@ -348,20 +367,7 @@ int main( int argc, char** argv )
 		PUT( PORT "/.~size",   (const char*) window_size, sizeof window_size );
 		PUT( PORT "/v/.~size", (const char*) raster_size, sizeof raster_size );
 		
-		size_t n_written = 0;
-		
-		while ( n_written < image_size - chunk_size )
-		{
-			PWRITE( PORT "/v/data", base, chunk_size, n_written );
-			
-			n_written += chunk_size;
-			base      += chunk_size;
-		}
-		
-		if ( size_t remainder = image_size - n_written )
-		{
-			PWRITE( PORT "/v/data", base, remainder, n_written );
-		}
+		write_image( base, image_size, chunk_size );
 		
 		int window_fd = OPEN( PORT "/window" );
 	}
