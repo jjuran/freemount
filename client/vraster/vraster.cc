@@ -44,7 +44,7 @@
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
-#define USAGE  "usage: " "GUI=<gui-path> " PROGRAM " <screen-path>\n" \
+#define USAGE  "usage: " PROGRAM "--gui <gui-path> <screen-path>\n" \
 "       where gui-path is a FORGE jack and screen-path is a raster file\n"
 
 #define NO_GRAYSCALE_LIGHT  "grayscale 'light' rasters aren't yet supported"
@@ -60,15 +60,19 @@ const size_t max_payload = uint16_t( -1 );
 
 enum
 {
+	Opt_gui     = 'g',
 	Opt_magnify = 'x',
 };
 
 static command::option options[] =
 {
+	{ "gui",     Opt_gui,     command::Param_required },
 	{ "magnify", Opt_magnify, command::Param_required },
 	{ NULL }
 };
 
+
+static const char* gui_path;
 
 static unsigned x_numerator   = 1;
 static unsigned x_denominator = 1;
@@ -147,6 +151,10 @@ char* const* get_options( char** argv )
 		
 		switch ( opt )
 		{
+			case Opt_gui:
+				gui_path = global_result.param;
+				break;
+			
 			case Opt_magnify:
 				const char* p;
 				p = global_result.param;
@@ -196,12 +204,15 @@ int main( int argc, char** argv )
 		return 2;
 	}
 	
-	const char* gui_path = getenv( "GUI" );
+	if ( gui_path == NULL )
+	{
+		gui_path = getenv( "GUI" );
+	}
 	
 	if ( gui_path == NULL )
 	{
 		write( STDERR_FILENO, STR_LEN( PROGRAM ": "
-			"GUI environment variable required\n" ) );
+			"--gui option or GUI environment variable required\n" ) );
 		return 2;
 	}
 	
