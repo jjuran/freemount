@@ -22,10 +22,14 @@
 #include "gear/parse_decimal.hh"
 
 // jack
+#include "jack/fifo.hh"
 #include "jack/interface.hh"
 
 // raster
 #include "raster/load.hh"
+#include "raster/relay.hh"
+#include "raster/relay_detail.hh"
+#include "raster/sync.hh"
 
 // unet-connect
 #include "unet/connect.hh"
@@ -36,6 +40,15 @@
 // freemount-client
 #include "freemount/address.hh"
 #include "freemount/synced.hh"
+
+
+#ifndef HAVE_SETPSHARED
+#ifdef __OpenBSD__
+#define HAVE_SETPSHARED  0
+#else
+#define HAVE_SETPSHARED  1
+#endif
+#endif
 
 
 #define PROGRAM  "vraster"
@@ -62,6 +75,7 @@ enum
 {
 	Opt_gui     = 'g',
 	Opt_mnt     = 'm',
+	Opt_watch   = 'w',
 	Opt_magnify = 'x',
 };
 
@@ -69,6 +83,7 @@ static command::option options[] =
 {
 	{ "gui",     Opt_gui,     command::Param_required },
 	{ "mnt",     Opt_mnt,     command::Param_required },
+	{ "watch",   Opt_watch                            },
 	{ "magnify", Opt_magnify, command::Param_required },
 	{ NULL }
 };
@@ -76,6 +91,8 @@ static command::option options[] =
 
 static const char*  gui_path;
 static char*        mnt_path;
+
+static bool watching;
 
 static unsigned x_numerator   = 1;
 static unsigned x_denominator = 1;
@@ -117,9 +134,11 @@ void report_error( const char* path, uint32_t err )
 }
 
 static
-void open_screen( const char* path )
+raster::sync_relay* open_screen( const char* path )
 {
-	screen_fd = open( path, O_RDONLY );
+	const int flags = watching ? O_RDWR : O_RDONLY;
+	
+	screen_fd = open( path, flags );
 	
 	if ( screen_fd < 0 )
 	{
@@ -128,9 +147,26 @@ void open_screen( const char* path )
 		exit( 1 );
 	}
 	
+	if ( watching )
+	{
+		jack::interface ji = path;
+	
+		const char* fifo_path = ji.fifo_path();
+	
+		int nok = jack::fifo_wait( fifo_path );
+	
+		if ( nok < 0 )
+		{
+			report_error( fifo_path, errno );
+		
+			exit( 1 );
+		}
+	}
+	
 	using namespace raster;
 	
-	loaded_raster = load_raster( screen_fd );
+	loaded_raster = watching ? play_raster( screen_fd )
+	                         : load_raster( screen_fd );
 	
 	if ( loaded_raster.addr == NULL )
 	{
@@ -138,6 +174,21 @@ void open_screen( const char* path )
 		
 		exit( 1 );
 	}
+	
+	if ( watching )
+	{
+		raster_note* sync = find_note( *loaded_raster.meta, Note_sync );
+		
+		if ( ! is_valid_sync( sync ) )
+		{
+			report_error( path, ENOSYS );
+			exit( 3 );
+		}
+		
+		return (sync_relay*) data( sync );
+	}
+	
+	return NULL;
 }
 
 static
@@ -160,6 +211,16 @@ char* const* get_options( char** argv )
 			
 			case Opt_mnt:
 				mnt_path = global_result.param;
+				break;
+			
+			case Opt_watch:
+				if ( ! HAVE_SETPSHARED )
+				{
+					ERROR( "process-shared mutexes and condvars unavailable" );
+					exit( 10 );
+				}
+				
+				watching = true;
 				break;
 			
 			case Opt_magnify:
@@ -270,7 +331,7 @@ int main( int argc, char** argv )
 	
 	const char* screen_path = args[ 0 ];
 	
-	open_screen( screen_path );
+	raster::sync_relay* sync = open_screen( screen_path );
 	
 	unet::connection_box the_connection;
 	
@@ -370,6 +431,20 @@ int main( int argc, char** argv )
 		write_image( base, image_size, chunk_size );
 		
 		int window_fd = OPEN( PORT "/window" );
+		
+		uint32_t seed = 0;
+		
+		while ( HAVE_SETPSHARED  &&  sync )
+		{
+			while ( seed == sync->seed )
+			{
+				raster::wait( *sync );
+			}
+			
+			seed = sync->seed;
+			
+			write_image( base, image_size, chunk_size );
+		}
 	}
 	catch ( const path_error& e )
 	{
