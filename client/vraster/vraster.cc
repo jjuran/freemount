@@ -75,6 +75,7 @@ enum
 {
 	Opt_gui     = 'g',
 	Opt_mnt     = 'm',
+	Opt_title   = 't',
 	Opt_watch   = 'w',
 	Opt_magnify = 'x',
 };
@@ -83,6 +84,7 @@ static command::option options[] =
 {
 	{ "gui",     Opt_gui,     command::Param_required },
 	{ "mnt",     Opt_mnt,     command::Param_required },
+	{ "title",   Opt_title,   command::Param_required },
 	{ "watch",   Opt_watch                            },
 	{ "magnify", Opt_magnify, command::Param_required },
 	{ NULL }
@@ -91,6 +93,8 @@ static command::option options[] =
 
 static const char*  gui_path;
 static char*        mnt_path;
+
+static const char* title;
 
 static bool watching;
 
@@ -211,6 +215,10 @@ char* const* get_options( char** argv )
 			
 			case Opt_mnt:
 				mnt_path = global_result.param;
+				break;
+			
+			case Opt_title:
+				title = global_result.param;
 				break;
 			
 			case Opt_watch:
@@ -393,6 +401,11 @@ int main( int argc, char** argv )
 		window_size[ 1 ] /= x_denominator;
 	}
 	
+	if ( title == NULL )
+	{
+		title = screen_path;
+	}
+	
 	try
 	{
 		int lock_fd = OPEN( PORT "/lock" );
@@ -424,9 +437,13 @@ int main( int argc, char** argv )
 		}
 		
 		PUT( PORT "/procid", "4" "\n", 2 );  // noGrow
-		PUT( PORT "/.~title",  screen_path, strlen( screen_path ) );
 		PUT( PORT "/.~size",   (const char*) window_size, sizeof window_size );
 		PUT( PORT "/v/.~size", (const char*) raster_size, sizeof raster_size );
+		
+		if ( title[ 0 ] != '\0' )
+		{
+			PUT( PORT "/.~title",  title, strlen( title ) );
+		}
 		
 		write_image( base, image_size, chunk_size );
 		
