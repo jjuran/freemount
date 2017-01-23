@@ -107,8 +107,6 @@ static int protocol_out = -1;
 
 static int next_fd = 3;
 
-static int screen_fd;
-
 static raster::raster_load loaded_raster;
 
 
@@ -142,9 +140,9 @@ raster::sync_relay* open_screen( const char* path )
 {
 	const int flags = watching ? O_RDWR : O_RDONLY;
 	
-	screen_fd = open( path, flags );
+	int raster_fd = open( path, flags );
 	
-	if ( screen_fd < 0 )
+	if ( raster_fd < 0 )
 	{
 		report_error( path, errno );
 		
@@ -169,8 +167,8 @@ raster::sync_relay* open_screen( const char* path )
 	
 	using namespace raster;
 	
-	loaded_raster = watching ? play_raster( screen_fd )
-	                         : load_raster( screen_fd );
+	loaded_raster = watching ? play_raster( raster_fd )
+	                         : load_raster( raster_fd );
 	
 	if ( loaded_raster.addr == NULL )
 	{
