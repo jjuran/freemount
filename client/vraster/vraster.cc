@@ -177,6 +177,8 @@ raster::sync_relay* open_screen( const char* path )
 		exit( 1 );
 	}
 	
+	close( raster_fd );
+	
 	if ( watching )
 	{
 		raster_note* sync = find_note( *loaded_raster.meta, Note_sync );
