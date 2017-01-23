@@ -286,6 +286,27 @@ void write_image( const char* base, size_t image_size, size_t chunk_size )
 	}
 }
 
+static
+void update_loop( raster::sync_relay*  sync,
+                  const char*          base,
+                  size_t               image_size,
+                  size_t               chunk_size )
+{
+	uint32_t seed = 0;
+	
+	while ( HAVE_SETPSHARED  &&  sync )
+	{
+		while ( seed == sync->seed )
+		{
+			raster::wait( *sync );
+		}
+		
+		seed = sync->seed;
+		
+		write_image( base, image_size, chunk_size );
+	}
+}
+
 int main( int argc, char** argv )
 {
 	if ( argc == 0 )
@@ -453,19 +474,7 @@ int main( int argc, char** argv )
 		
 		int window_fd = OPEN( PORT "/window" );
 		
-		uint32_t seed = 0;
-		
-		while ( HAVE_SETPSHARED  &&  sync )
-		{
-			while ( seed == sync->seed )
-			{
-				raster::wait( *sync );
-			}
-			
-			seed = sync->seed;
-			
-			write_image( base, image_size, chunk_size );
-		}
+		update_loop( sync, base, image_size, chunk_size );
 	}
 	catch ( const path_error& e )
 	{
