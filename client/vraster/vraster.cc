@@ -57,8 +57,8 @@
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
-#define USAGE  "usage: " PROGRAM "--gui <gui-path> <screen-path>\n" \
-"       where gui-path is a FORGE jack and screen-path is a raster file\n"
+#define USAGE  "usage: " PROGRAM "--gui <gui-path> <raster-path>\n" \
+"       where gui-path is a FORGE jack and raster-path is a raster file\n"
 
 #define NO_GRAYSCALE_LIGHT  "grayscale 'light' rasters aren't yet supported"
 
@@ -136,7 +136,7 @@ void report_error( const char* path, uint32_t err )
 }
 
 static
-raster::sync_relay* open_screen( const char* path )
+raster::sync_relay* open_raster( const char* path )
 {
 	const int flags = watching ? O_RDWR : O_RDONLY;
 	
@@ -337,9 +337,9 @@ int main( int argc, char** argv )
 		connector_argv = make_unix_connector( ji.socket_path() );
 	}
 	
-	const char* screen_path = args[ 0 ];
+	const char* raster_path = args[ 0 ];
 	
-	raster::sync_relay* sync = open_screen( screen_path );
+	raster::sync_relay* sync = open_raster( raster_path );
 	
 	unet::connection_box the_connection;
 	
@@ -403,7 +403,7 @@ int main( int argc, char** argv )
 	
 	if ( title == NULL )
 	{
-		title = screen_path;
+		title = raster_path;
 	}
 	
 	try
