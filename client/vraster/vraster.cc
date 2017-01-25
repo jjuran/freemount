@@ -153,6 +153,11 @@ void wait_on_fifo( jack::interface ji )
 static
 raster::sync_relay* open_raster( const char* path )
 {
+	if ( watching )
+	{
+		wait_on_fifo( path );
+	}
+	
 	const int flags = watching ? O_RDWR : O_RDONLY;
 	
 	int raster_fd = open( path, flags );
@@ -162,11 +167,6 @@ raster::sync_relay* open_raster( const char* path )
 		report_error( path, errno );
 		
 		exit( 1 );
-	}
-	
-	if ( watching )
-	{
-		wait_on_fifo( path );
 	}
 	
 	using namespace raster;
