@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// config
+#include "config/setpshared.h"
+
 // more-posix
 #include "more/perror.hh"
 
@@ -40,15 +43,6 @@
 // freemount-client
 #include "freemount/address.hh"
 #include "freemount/synced.hh"
-
-
-#ifndef HAVE_SETPSHARED
-#ifdef __OpenBSD__
-#define HAVE_SETPSHARED  0
-#else
-#define HAVE_SETPSHARED  1
-#endif
-#endif
 
 
 #define PROGRAM  "vraster"
@@ -226,7 +220,7 @@ char* const* get_options( char** argv )
 				break;
 			
 			case Opt_watch:
-				if ( ! HAVE_SETPSHARED )
+				if ( ! CONFIG_SETPSHARED )
 				{
 					ERROR( "process-shared mutexes and condvars unavailable" );
 					exit( 10 );
@@ -294,7 +288,7 @@ void update_loop( raster::sync_relay*  sync,
 {
 	uint32_t seed = 0;
 	
-	while ( HAVE_SETPSHARED  &&  sync )
+	while ( CONFIG_SETPSHARED  &&  sync )
 	{
 		while ( seed == sync->seed )
 		{

@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// config
+#include "config/setpshared.h"
+
 // more-posix
 #include "more/perror.hh"
 
@@ -47,15 +50,6 @@
 
 // interact
 #include "protocol.hh"
-
-
-#ifndef HAVE_SETPSHARED
-#ifdef __OpenBSD__
-#define HAVE_SETPSHARED  0
-#else
-#define HAVE_SETPSHARED  1
-#endif
-#endif
 
 
 #define PROGRAM "interact"
@@ -298,7 +292,7 @@ void update_loop( raster::sync_relay*  sync,
 {
 	uint32_t seed = 0;
 	
-	while ( HAVE_SETPSHARED  &&  sync )
+	while ( CONFIG_SETPSHARED  &&  sync )
 	{
 		while ( seed == sync->seed )
 		{
