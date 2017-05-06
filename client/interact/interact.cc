@@ -64,6 +64,9 @@
 
 #define NO_GRAYSCALE_LIGHT  "grayscale 'light' rasters aren't yet supported"
 
+#define POLLING_ENSUES  \
+	"WARNING: pthread_cond_wait() is broken -- will poll every 10ms instead"
+
 #define ERROR( msg )  write( STDERR_FILENO, STR_LEN( PROGRAM ": " msg "\n" ) )
 
 namespace p7 = poseven;
@@ -292,11 +295,29 @@ void update_loop( raster::sync_relay*  sync,
 {
 	uint32_t seed = 0;
 	
+	bool wait_is_broken = false;
+	
 	while ( CONFIG_SETPSHARED  &&  sync )
 	{
 		while ( seed == sync->seed )
 		{
-			raster::wait( *sync );
+			if ( wait_is_broken )
+			{
+				usleep( 10000 );  // 10ms
+			}
+			else
+			{
+				try
+				{
+					raster::wait( *sync );
+				}
+				catch ( const raster::wait_failed& )
+				{
+					ERROR( POLLING_ENSUES );
+					
+					wait_is_broken = true;
+				}
+			}
 			
 			poseven::thread::testcancel();
 		}
