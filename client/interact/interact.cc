@@ -25,7 +25,6 @@
 #include "gear/parse_decimal.hh"
 
 // jack
-#include "jack/fifo.hh"
 #include "jack/interface.hh"
 
 // raster
@@ -141,25 +140,8 @@ void report_error( const char* path, uint32_t err )
 }
 
 static
-void wait_on_fifo( jack::interface ji )
-{
-	const char* fifo_path = ji.fifo_path();
-	
-	int nok = jack::fifo_wait( fifo_path );
-	
-	if ( nok < 0 )
-	{
-		report_error( fifo_path, errno );
-		
-		exit( 1 );
-	}
-}
-
-static
 raster::sync_relay* open_raster( const char* path )
 {
-	wait_on_fifo( path );
-	
 	int raster_fd = open( path, O_RDWR );
 	
 	if ( raster_fd < 0 )
