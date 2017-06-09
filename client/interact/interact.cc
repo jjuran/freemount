@@ -295,9 +295,9 @@ void update_loop( raster::sync_relay*  sync,
 {
 	uint32_t seed = 0;
 	
-	bool wait_is_broken = false;
+	bool wait_is_broken = ! CONFIG_SETPSHARED;
 	
-	while ( CONFIG_SETPSHARED  &&  sync )
+	while ( true )
 	{
 		while ( seed == sync->seed )
 		{
