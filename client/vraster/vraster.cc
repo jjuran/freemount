@@ -266,7 +266,7 @@ void update_loop( raster::sync_relay*  sync,
 	
 	bool wait_is_broken = ! CONFIG_SETPSHARED;
 	
-	while ( true )
+	while ( sync->status == raster::Sync_ready )
 	{
 		while ( seed == sync->seed )
 		{
@@ -465,6 +465,8 @@ int main( int argc, char** argv )
 		if ( sync )
 		{
 			update_loop( sync, base, image_size, chunk_size );
+			
+			return 0;
 		}
 	}
 	catch ( const path_error& e )
