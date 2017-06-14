@@ -24,6 +24,9 @@
 // gear
 #include "gear/parse_decimal.hh"
 
+// plus
+#include "plus/string/concat.hh"
+
 // jack
 #include "jack/interface.hh"
 
@@ -137,6 +140,21 @@ static
 void report_error( const char* path, uint32_t err )
 {
 	more::perror( PROGRAM, path, err );
+}
+
+static
+const char* default_gui()
+{
+	const char* result = NULL;
+	
+	if ( const char* home = getenv( "HOME" ) )
+	{
+		static plus::string path = plus::concat( home, "/var/run/fs/gui" );
+		
+		result = path.c_str();
+	}
+	
+	return result;
 }
 
 static
@@ -370,6 +388,11 @@ int main( int argc, char** argv )
 		if ( gui_path == NULL )
 		{
 			gui_path = getenv( "GUI" );
+		}
+		
+		if ( gui_path == NULL )
+		{
+			gui_path = default_gui();
 		}
 		
 		if ( gui_path == NULL )
