@@ -1,5 +1,5 @@
 /*
-	vraster.cc
+	display.cc
 	----------
 */
 
@@ -47,9 +47,9 @@
 #include "freemount/synced.hh"
 
 
-#define PROGRAM  "vraster"
+#define PROGRAM  "display"
 
-#define PORT  "/gui/port/vraster"
+#define PORT  "/gui/port/display"
 
 #define STR_LEN( s )  "" s, (sizeof s - 1)
 
