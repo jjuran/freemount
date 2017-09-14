@@ -6,6 +6,7 @@
 // POSIX
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/socket.h>
 
 // Standard C
 #include <errno.h>
@@ -314,7 +315,7 @@ void update_loop( raster::sync_relay*  sync,
 	
 	bool wait_is_broken = ! CONFIG_SETPSHARED;
 	
-	while ( true )
+	while ( sync->status == raster::Sync_ready )
 	{
 		while ( seed == sync->seed )
 		{
@@ -377,6 +378,8 @@ void* raster_update_start( void* arg )
 	const size_t image_size = desc.height * desc.stride;
 	
 	update_loop( sync, base, image_size, chunk_size );
+	
+	shutdown( protocol_out, SHUT_WR );
 	
 	return NULL;
 }
