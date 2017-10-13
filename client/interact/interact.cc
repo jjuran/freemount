@@ -530,6 +530,15 @@ int main( int argc, char** argv )
 			PUT( RASTER "/.~stride", (const char*) &stride, sizeof stride );
 		}
 		
+		try
+		{
+			PUT( PORT "/compositing", "1" "\n", 2 );
+		}
+		catch ( ... )
+		{
+			// The existence of this property is platform-dependent.
+		}
+		
 		PUT( PORT "/procid", "4" "\n", 2 );  // noGrow
 		PUT( PORT   "/.~size", (const char*) window_size, sizeof window_size );
 		PUT( RASTER "/.~size", (const char*) raster_size, sizeof raster_size );
