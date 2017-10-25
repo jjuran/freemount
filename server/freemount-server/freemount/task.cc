@@ -65,9 +65,9 @@ void* request_task::start( void* param )
 	
 	poseven::thread::testcancel();
 	
-	send_response( s.queue(), result, id );
-	
 	p7::lock k( task.its_mutex );
+	
+	send_response( s.queue(), result, id );
 	
 	task.its_status = 0;
 	
