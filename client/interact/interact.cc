@@ -311,6 +311,10 @@ void update_loop( raster::sync_relay*  sync,
                   size_t               image_size,
                   size_t               chunk_size )
 {
+	plus::string buffer;
+	
+	char* image = buffer.reset( image_size );
+	
 	uint32_t seed = 0;
 	
 	bool wait_is_broken = ! CONFIG_SETPSHARED;
@@ -359,7 +363,9 @@ void update_loop( raster::sync_relay*  sync,
 		
 		seed = sync->seed;
 		
-		write_image( base, image_size, chunk_size );
+		memcpy( image, base, image_size );
+		
+		write_image( image, image_size, chunk_size );
 	}
 }
 
