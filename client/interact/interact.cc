@@ -569,6 +569,13 @@ int main( int argc, char** argv )
 	
 	send_read_request( protocol_out, STR_LEN( PORT "/v/events/v/stream" ), 1 );
 	
+	/*
+		Send a NUL byte.  This may be intercepted by exhibit to indicate
+		readiness, or passed on to the raster author as a null SPIEL message.
+	*/
+	
+	write( STDOUT_FILENO, "", 1 );
+	
 	int exit_status = 0;
 	
 	int nok = run_event_loop( protocol_in );
