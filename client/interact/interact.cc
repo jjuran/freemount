@@ -70,6 +70,14 @@
 #define POLLING_ENSUES  \
 	"WARNING: pthread_cond_wait() is broken -- will poll every 10ms instead"
 
+#define MACRELIX_REQUIRED  \
+	"User interaction required.  Please launch MacRelix..."
+
+#define MACRELIX_ACQUIRED  \
+	"Connected to MacRelix.                               "
+
+#define PROMPT( msg )  write( STDERR_FILENO, STR_LEN( PROGRAM ": " msg ) )
+
 #define ERROR( msg )  write( STDERR_FILENO, STR_LEN( PROGRAM ": " msg "\n" ) )
 
 namespace p7 = poseven;
@@ -390,6 +398,33 @@ void* raster_update_start( void* arg )
 	return NULL;
 }
 
+static
+void fifo_wait( const char* path )
+{
+	int fd = open( path, O_WRONLY | O_NONBLOCK );
+	
+	if ( fd < 0  &&  errno == ENXIO )
+	{
+		PROMPT( MACRELIX_REQUIRED );
+		
+		fd = open( path, O_WRONLY );
+		
+		if ( fd >= 0 )
+		{
+			write( STDERR_FILENO, "\r", 1 );
+			ERROR( MACRELIX_ACQUIRED );
+		}
+	}
+	
+	if ( fd < 0 )
+	{
+		report_error( path, errno );
+		exit( 1 );
+	}
+	
+	close( fd );
+}
+
 int main( int argc, char** argv )
 {
 	if ( argc == 0 )
@@ -446,6 +481,8 @@ int main( int argc, char** argv )
 		}
 		
 		static jack::interface ji = gui_path;
+		
+		fifo_wait( ji.fifo_path() );
 		
 		connector_argv = make_unix_connector( ji.socket_path() );
 	}
