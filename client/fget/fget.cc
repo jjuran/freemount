@@ -69,8 +69,8 @@ static int output_fd = -1;
 
 static const char* the_path;
 
-static uint64_t the_expected_size;
-static uint64_t n_written;
+static unsigned long long the_expected_size;
+static unsigned long long n_written;
 
 static bool clobbering;
 static bool resume_downloads;
