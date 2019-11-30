@@ -10,6 +10,12 @@
 #include <unistd.h>
 #include <sys/select.h>
 
+// Standard C
+#ifdef __APPLE__
+// Needed to compile FD_ZERO with Mac OS X 10.2's headers.
+#include <string.h>
+#endif
+
 // poseven
 #include "poseven/types/thread.hh"
 
