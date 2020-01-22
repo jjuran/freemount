@@ -315,7 +315,6 @@ void write_image( const char* base, size_t image_size, size_t chunk_size )
 
 static
 void update_loop( raster::sync_relay*  sync,
-                  const char*          base,
                   size_t               image_size,
                   size_t               chunk_size )
 {
@@ -371,6 +370,8 @@ void update_loop( raster::sync_relay*  sync,
 		
 		seed = sync->seed;
 		
+		const char* base = (char*) loaded_raster.addr;
+		
 		memcpy( image, base, image_size );
 		
 		write_image( image, image_size, chunk_size );
@@ -384,14 +385,12 @@ void* raster_update_start( void* arg )
 	
 	const raster::raster_desc& desc = loaded_raster.meta->desc;
 	
-	const char* base = (char*) loaded_raster.addr;
-	
 	const size_t chunk_height = min( desc.height, max_payload / desc.stride );
 	
 	const size_t chunk_size = chunk_height * desc.stride;
 	const size_t image_size = desc.height * desc.stride;
 	
-	update_loop( sync, base, image_size, chunk_size );
+	update_loop( sync, image_size, chunk_size );
 	
 	shutdown( protocol_out, SHUT_WR );
 	
