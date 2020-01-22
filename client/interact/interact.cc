@@ -370,7 +370,9 @@ void update_loop( raster::sync_relay*  sync,
 		
 		seed = sync->seed;
 		
-		const char* base = (char*) loaded_raster.addr;
+		const uint8_t frame = loaded_raster.meta->desc.frame;
+		
+		const char* base = (char*) loaded_raster.addr + frame * image_size;
 		
 		memcpy( image, base, image_size );
 		
