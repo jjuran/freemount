@@ -129,6 +129,11 @@ int list( session& s, uint8_t r_id, const request& r )
 static
 int open( session& s, uint8_t r_id, const request& r )
 {
+	if ( ! writes_allowed )
+	{
+		return -EPERM;  // FIXME:  Allow read-only opens
+	}
+	
 	int fd = r.fd;
 	
 	if ( unsigned( fd ) > 255 )
@@ -256,6 +261,11 @@ int read( session& s, uint8_t r_id, const request& r )
 static
 int write( session& s, uint8_t r_id, const request& r )
 {
+	if ( ! writes_allowed )
+	{
+		return -EPERM;
+	}
+	
 	ssize_t n_written = -1;
 	
 	try
@@ -296,6 +306,11 @@ int write( session& s, uint8_t r_id, const request& r )
 static
 int link( session& s, uint8_t r_id, const request& r )
 {
+	if ( ! writes_allowed )
+	{
+		return -EPERM;
+	}
+	
 	const plus::string& path_1 = r.path;
 	const plus::string& path_2 = r.data;
 	
