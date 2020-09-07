@@ -58,6 +58,9 @@ namespace p7 = poseven;
 using ::write;
 
 
+bool writes_allowed = false;
+
+
 static
 int stat( session& s, uint8_t r_id, const request& r )
 {

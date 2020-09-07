@@ -10,6 +10,8 @@
 namespace freemount
 {
 	
+	extern bool writes_allowed;
+	
 	struct frame_header;
 	
 	int frame_handler( void* that, const frame_header& frame );

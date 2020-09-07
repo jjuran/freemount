@@ -47,12 +47,14 @@ enum
 	Option_last_byte = 255,
 	
 	Option_root,
+	Option_rw,
 };
 
 static command::option options[] =
 {
 	{ "quiet",  Option_quiet },
 	{ "root",   Option_root,   Param_required },
+	{ "rw",     Option_rw   },
 	{ "user",   Option_user },
 	{ "window", Option_window, Param_required },
 	{ NULL }
@@ -100,6 +102,10 @@ char* const* get_options( char* const* argv )
 			
 			case Option_root:
 				the_native_root_directory = command::global_result.param;
+				break;
+			
+			case Option_rw:
+				writes_allowed = true;
 				break;
 			
 			case Option_user:
