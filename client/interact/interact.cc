@@ -119,9 +119,6 @@ static char*        mnt_path;
 static const char* raster_path;
 static const char* title = "";
 
-static unsigned x_numerator   = 1;
-static unsigned x_denominator = 1;
-
 static poseven::thread raster_update_thread;
 
 static int feed_fd = -1;

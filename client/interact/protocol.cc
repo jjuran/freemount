@@ -21,6 +21,9 @@
 using namespace freemount;
 
 
+unsigned x_numerator   = 1;
+unsigned x_denominator = 1;
+
 struct request_status
 {
 	ssize_t result;
@@ -60,7 +63,9 @@ int frame_handler( void* that, const frame_header& frame )
 {
 	if ( frame.type == Frame_recv_data )
 	{
-		write( STDOUT_FILENO, get_data( frame ), get_size( frame ) );
+		const uint8_t* data = (const uint8_t*) get_data( frame );
+		
+		write( STDOUT_FILENO, data, get_size( frame ) );
 		return 0;
 	}
 	
