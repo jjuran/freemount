@@ -65,6 +65,25 @@ int frame_handler( void* that, const frame_header& frame )
 	{
 		const uint8_t* data = (const uint8_t*) get_data( frame );
 		
+		uint16_t buffer[ 3 ];
+		
+		if ( x_numerator != x_denominator  &&  data[ 0 ] == 5 )
+		{
+			uint16_t x = iota::u16_from_big( *(const uint16_t*) &data[ 2 ] );
+			uint16_t y = iota::u16_from_big( *(const uint16_t*) &data[ 4 ] );
+			
+			x *= x_denominator;
+			y *= x_denominator;
+			x /= x_numerator;
+			y /= x_numerator;
+			
+			buffer[ 0 ] = (const uint16_t&) data[ 0 ];
+			buffer[ 1 ] = iota::big_u16( x );
+			buffer[ 2 ] = iota::big_u16( y );
+			
+			data = (const uint8_t*) buffer;
+		}
+		
 		write( STDOUT_FILENO, data, get_size( frame ) );
 		return 0;
 	}
