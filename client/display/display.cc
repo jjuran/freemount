@@ -34,6 +34,7 @@
 #include "raster/load.hh"
 #include "raster/relay.hh"
 #include "raster/relay_detail.hh"
+#include "raster/skif.hh"
 #include "raster/sync.hh"
 
 // unet-connect
@@ -353,6 +354,11 @@ void update_loop( raster::sync_relay*  sync,
 static inline
 bool has_alpha_last( const raster::raster_desc& desc )
 {
+	if ( desc.magic == raster::kSKIFFileType )
+	{
+		return desc.layout.per_byte[ 0 ] == 0x01;
+	}
+	
 	return (desc.model & 1) == (raster::Model_RGBx & 1);
 }
 
@@ -454,7 +460,7 @@ int main( int argc, char** argv )
 	short stride = desc.stride;
 	char  depth  = desc.weight;
 	
-	if ( depth == 16  &&  desc.model == raster::Model_xRGB )
+	if ( depth == 16  &&  ! is_16bit_565( desc ) )
 	{
 		depth = 15;
 	}
@@ -464,6 +470,20 @@ int main( int argc, char** argv )
 	char alpha_last = has_alpha_last( desc );
 	
 	char little_endian = (bool) *(uint16_t*) (base + loaded_raster.size - 4);
+	
+	if ( depth == 32  &&  alpha_last )
+	{
+		/*
+			RGBA producers like Android 4+ use actual RGBA byte order, even
+			when they're little-endian -- not ABGR.  Since we interpret pixel
+			formats as native 32-bit values, a little-endian viewer sees the
+			format as ABGR, which matches RGBA pixels when they're inherently
+			byte-swapped.  But here we're copying the memory directly, so the
+			format really is RGBA, which is a big-endian format.
+		*/
+		
+		little_endian = false;
+	}
 	
 	short raster_size[ 2 ] = { desc.height, desc.width };
 	short window_size[ 2 ] = { desc.height, desc.width };
