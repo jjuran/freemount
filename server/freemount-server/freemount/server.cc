@@ -32,6 +32,7 @@
 #include "vfs/primitives/hardlink.hh"
 #include "vfs/primitives/listdir.hh"
 #include "vfs/primitives/open.hh"
+#include "vfs/primitives/slurp.hh"
 #include "vfs/primitives/stat.hh"
 
 // freemount
@@ -173,6 +174,27 @@ int close( session& s, uint8_t r_id, const request& r )
 }
 
 static
+int read_slurp( session& s, uint8_t r_id, const vfs::node& that )
+{
+	// No need to try/catch, because we're called from read()'s try block
+	
+	plus::string bytes = slurp( that );
+	
+	const uint64_t size = bytes.size();
+	
+	data_transmitting( size );
+	
+	send_lock lock;
+	
+	queue_int   ( s.queue(), Frame_stat_size,               size, r_id );
+	queue_string( s.queue(), Frame_recv_data, bytes.data(), size, r_id );
+	
+	s.queue().flush();
+	
+	return 0;
+}
+
+static
 int read( session& s, uint8_t r_id, const request& r )
 {
 	vfs::filehandle_ptr file;
@@ -181,7 +203,19 @@ int read( session& s, uint8_t r_id, const request& r )
 	{
 		vfs::node_ptr that = vfs::resolve_pathname( s.root(), r.path, s.cwd() );
 		
-		file = open( *that, O_RDONLY, 0 );
+		try
+		{
+			file = open( *that, O_RDONLY, 0 );
+		}
+		catch ( const p7::errno_t& err )
+		{
+			if ( err == ENOENT )
+			{
+				return read_slurp( s, r_id, *that );
+			}
+			
+			return -err;
+		}
 		
 		if ( S_ISREG( that->filemode() ) )
 		{
