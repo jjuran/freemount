@@ -33,6 +33,7 @@
 #include "vfs/primitives/listdir.hh"
 #include "vfs/primitives/open.hh"
 #include "vfs/primitives/slurp.hh"
+#include "vfs/primitives/splat.hh"
 #include "vfs/primitives/stat.hh"
 
 // freemount
@@ -304,6 +305,9 @@ int write( session& s, uint8_t r_id, const request& r )
 	
 	try
 	{
+		const char* buffer = r.data.data();
+		const size_t size  = r.data.size();
+		
 		vfs::filehandle_ptr file;
 		
 		if ( !r.path.empty() )
@@ -313,16 +317,25 @@ int write( session& s, uint8_t r_id, const request& r )
 			int open_flags = r.offset < 0 ? O_WRONLY | O_CREAT | O_TRUNC
 			                              : O_WRONLY;
 			
-			file = open( *that, open_flags, 0666 );
+			try
+			{
+				file = open( *that, open_flags, 0666 );
+			}
+			catch ( const p7::errno_t& err )
+			{
+				if ( err == EPERM )
+				{
+					splat( *that, buffer, size );
+					return 0;
+				}
+				
+				return -err;
+			}
 		}
 		else
 		{
 			return -ENOENT;  // empty pathname
 		}
-		
-		const char* buffer = r.data.data();
-		
-		const size_t size = r.data.size();
 		
 		const off_t offset = r.offset;
 		
