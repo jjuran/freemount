@@ -77,7 +77,7 @@ int frame_handler( void* that, const frame_header& frame )
 			x /= x_numerator;
 			y /= x_numerator;
 			
-			buffer[ 0 ] = (const uint16_t&) data[ 0 ];
+			buffer[ 0 ] = *(const uint16_t*) &data[ 0 ];
 			buffer[ 1 ] = iota::big_u16( x );
 			buffer[ 2 ] = iota::big_u16( y );
 			
