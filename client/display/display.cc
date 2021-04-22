@@ -56,7 +56,7 @@
 #define USAGE  "usage: " PROGRAM "--gui <gui-path> <raster-path>\n" \
 "       where gui-path is a FORGE jack and raster-path is a raster file\n"
 
-#define NO_GRAYSCALE_LIGHT  "grayscale 'light' rasters aren't yet supported"
+#define NO_MONOCHROME_LIGHT  "monochrome 'light' rasters aren't yet supported"
 
 #define POLLING_ENSUES  \
 	"WARNING: pthread_cond_wait() is broken -- will poll every 10ms instead"
@@ -432,9 +432,9 @@ int main( int argc, char** argv )
 	
 	const raster::raster_desc& desc = loaded_raster.meta->desc;
 	
-	if ( desc.model == raster::Model_grayscale_light )
+	if ( desc.model == raster::Model_monochrome_light )
 	{
-		write( STDERR_FILENO, STR_LEN( PROGRAM ": " NO_GRAYSCALE_LIGHT "\n" ) );
+		ERROR( NO_MONOCHROME_LIGHT );
 		return 1;
 	}
 	
@@ -453,7 +453,7 @@ int main( int argc, char** argv )
 		depth = 15;
 	}
 	
-	char grayscale = desc.model == raster::Model_grayscale_paint;
+	char monochrome = desc.model == raster::Model_monochrome_paint;
 	
 	char alpha_last = (desc.model & 1) == (raster::Model_RGBx & 1);
 	
@@ -494,8 +494,8 @@ int main( int argc, char** argv )
 			PUT( PORT "/v/.~alpha-last", &alpha_last, sizeof (char) );
 			PUT( PORT "/v/.~little-endian", &little_endian, sizeof (char) );
 			
-			PUT( PORT "/v/.~depth",     &depth,     sizeof depth     );
-			PUT( PORT "/v/.~grayscale", &grayscale, sizeof grayscale );
+			PUT( PORT "/v/.~depth",     &depth,      sizeof depth      );
+			PUT( PORT "/v/.~grayscale", &monochrome, sizeof monochrome );
 			
 			PUT( PORT "/v/.~stride", (const char*) &stride, sizeof stride );
 		}
