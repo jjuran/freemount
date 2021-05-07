@@ -350,6 +350,12 @@ void update_loop( raster::sync_relay*  sync,
 	}
 }
 
+static inline
+bool has_alpha_last( const raster::raster_desc& desc )
+{
+	return (desc.model & 1) == (raster::Model_RGBx & 1);
+}
+
 int main( int argc, char** argv )
 {
 	if ( argc == 0 )
@@ -455,7 +461,7 @@ int main( int argc, char** argv )
 	
 	char monochrome = desc.model == raster::Model_monochrome_paint;
 	
-	char alpha_last = (desc.model & 1) == (raster::Model_RGBx & 1);
+	char alpha_last = has_alpha_last( desc );
 	
 	char little_endian = (bool) *(uint16_t*) (base + loaded_raster.size - 4);
 	
