@@ -532,8 +532,8 @@ int main( int argc, char** argv )
 	
 	char little_endian = (bool) *(uint16_t*) (base + loaded_raster.size - 4);
 	
-	short raster_size[ 2 ] = { desc.height, desc.width };
-	short window_size[ 2 ] = { desc.height, desc.width };
+	short raster_size[ 2 ] = { (short) desc.height, (short) desc.width };
+	short window_size[ 2 ] = { (short) desc.height, (short) desc.width };
 	
 	if ( x_numerator > 1  &&  x_numerator <= 16 )
 	{
