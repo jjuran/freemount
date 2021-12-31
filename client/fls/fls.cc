@@ -374,7 +374,7 @@ int main( int argc, char** argv )
 	
 	if ( path != NULL )
 	{
-		the_path.assign( path, strlen( path ), plus::delete_never );
+		the_path.assign( path, strlen( path ), vxo::delete_never );
 	}
 	
 	send_stat_request( the_path, 0 );
