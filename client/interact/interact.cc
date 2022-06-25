@@ -96,7 +96,6 @@ enum
 	
 	Opt_last_byte = 255,
 	
-	Opt_feed,
 	Opt_raster,
 };
 
@@ -104,7 +103,6 @@ static command::option options[] =
 {
 	{ "gui",     Opt_gui,     command::Param_required },
 	{ "mnt",     Opt_mnt,     command::Param_required },
-	{ "feed",    Opt_feed,    command::Param_required },
 	{ "raster",  Opt_raster,  command::Param_required },
 	{ "title",   Opt_title,   command::Param_required },
 	{ "magnify", Opt_magnify, command::Param_required },
@@ -112,7 +110,6 @@ static command::option options[] =
 };
 
 
-static const char*  feed_path;
 static const char*  gui_path;
 static char*        mnt_path;
 
@@ -120,8 +117,6 @@ static const char* raster_path;
 static const char* title = "";
 
 static poseven::thread raster_update_thread;
-
-static int feed_fd = -1;
 
 static int protocol_in  = -1;
 static int protocol_out = -1;
@@ -227,18 +222,6 @@ char* const* get_options( char** argv )
 				mnt_path = global_result.param;
 				break;
 			
-			case Opt_feed:
-				feed_path = global_result.param;
-				
-				feed_fd = open( feed_path, O_RDONLY );
-				
-				if ( feed_fd < 0 )
-				{
-					report_error( feed_path, errno );
-					exit( 1 );
-				}
-				break;
-			
 			case Opt_raster:
 				raster_path = global_result.param;
 				break;
@@ -327,24 +310,7 @@ void update_loop( raster::sync_relay*  sync,
 	{
 		while ( seed == sync->seed )
 		{
-			if ( feed_fd >= 0 )
-			{
-				char c;
-				ssize_t n = read( feed_fd, &c, sizeof c );
-				
-				if ( n > 0 )
-				{
-					continue;
-				}
-				
-				if ( n < 0 )
-				{
-					report_error( feed_path, errno );
-				}
-				
-				return;
-			}
-			else if ( wait_is_broken )
+			if ( wait_is_broken )
 			{
 				usleep( 10000 );  // 10ms
 			}
