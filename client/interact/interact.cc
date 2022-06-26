@@ -298,6 +298,8 @@ void update_loop( raster::sync_relay*  sync,
                   size_t               image_size,
                   size_t               chunk_size )
 {
+	const char* update_fifo = getenv( "GRAPHICS_UPDATE_SIGNAL_FIFO" );
+	
 	plus::string buffer;
 	
 	char* image = buffer.reset( image_size );
@@ -310,7 +312,11 @@ void update_loop( raster::sync_relay*  sync,
 	{
 		while ( seed == sync->seed )
 		{
-			if ( wait_is_broken )
+			if ( update_fifo )
+			{
+				close( open( update_fifo, O_WRONLY ) );
+			}
+			else if ( wait_is_broken )
 			{
 				usleep( 10000 );  // 10ms
 			}
