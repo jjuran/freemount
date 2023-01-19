@@ -13,9 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// config
-#include "config/setpshared.h"
-
 // more-posix
 #include "more/perror.hh"
 
@@ -33,7 +30,6 @@
 
 // raster
 #include "raster/load.hh"
-#include "raster/relay.hh"
 #include "raster/relay_detail.hh"
 #include "raster/sync.hh"
 
@@ -68,7 +64,7 @@
 #define NO_MONOCHROME_LIGHT  "monochrome 'light' rasters aren't yet supported"
 
 #define POLLING_ENSUES  \
-	"WARNING: pthread_cond_wait() is broken -- will poll every 10ms instead"
+	"GRAPHICS_UPDATE_SIGNAL_FIFO is unset -- will poll every 10ms instead"
 
 #define MACRELIX_REQUIRED  \
 	"User interaction required.  Please launch MacRelix..."
@@ -300,13 +296,16 @@ void update_loop( raster::sync_relay*  sync,
 {
 	const char* update_fifo = getenv( "GRAPHICS_UPDATE_SIGNAL_FIFO" );
 	
+	if ( ! update_fifo )
+	{
+		ERROR( POLLING_ENSUES );
+	}
+	
 	plus::string buffer;
 	
 	char* image = buffer.reset( image_size );
 	
 	uint32_t seed = 0;
-	
-	bool wait_is_broken = ! CONFIG_SETPSHARED;
 	
 	while ( sync->status == raster::Sync_ready )
 	{
@@ -316,22 +315,9 @@ void update_loop( raster::sync_relay*  sync,
 			{
 				close( open( update_fifo, O_WRONLY ) );
 			}
-			else if ( wait_is_broken )
-			{
-				usleep( 10000 );  // 10ms
-			}
 			else
 			{
-				try
-				{
-					raster::wait( *sync );
-				}
-				catch ( const raster::wait_failed& )
-				{
-					ERROR( POLLING_ENSUES );
-					
-					wait_is_broken = true;
-				}
+				usleep( 10000 );  // 10ms
 			}
 			
 			poseven::thread::testcancel();
@@ -597,7 +583,7 @@ int main( int argc, char** argv )
 		exit_status = 1;
 	}
 	
-	raster_update_thread.cancel( &sync->cond );
+	raster_update_thread.cancel( NULL );
 	raster_update_thread.join();
 	
 	return exit_status;
