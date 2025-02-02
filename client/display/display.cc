@@ -472,8 +472,15 @@ int main( int argc, char** argv )
 		{
 			LINK( "/gui/new/gworld", PORT "/view" );
 			
-			PUT( PORT "/v/.~alpha-last", &alpha_last, sizeof (char) );
-			PUT( PORT "/v/.~little-endian", &little_endian, sizeof (char) );
+			if ( alpha_last )
+			{
+				PUT( PORT "/v/.~alpha-last", &alpha_last, sizeof (char) );
+			}
+			
+			if ( little_endian )
+			{
+				PUT( PORT "/v/.~little-endian", &little_endian, sizeof (char) );
+			}
 			
 			PUT( PORT "/v/.~depth",     &depth,      sizeof depth      );
 			PUT( PORT "/v/.~grayscale", &monochrome, sizeof monochrome );
