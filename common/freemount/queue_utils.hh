@@ -20,6 +20,7 @@ namespace freemount
 	void queue_int_( send_queue& queue, uint8_t type, uint64_t value, uint8_t r_id = 0 );
 	
 	void queue_string( send_queue& queue, uint8_t type, const char* s, uint32_t len, uint8_t r_id = 0 );
+	void queue_buffer( send_queue& queue, uint8_t type, const char* s, uint32_t len, uint8_t r_id = 0 );
 	
 	inline
 	void queue_empty( send_queue& queue, uint8_t type, uint8_t r_id = 0 )

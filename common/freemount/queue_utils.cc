@@ -88,4 +88,50 @@ namespace freemount
 		queue.add( &zero, pad_length );
 	}
 	
+	void queue_buffer( send_queue& queue, uint8_t type, const char* s, uint32_t len, uint8_t r_id )
+	{
+		enum
+		{
+			block_size = 0x4000,  // 16384
+			max_length = 0xFFFF,  // 65535
+		};
+		
+		if ( len > max_length )
+		{
+			/*
+				If the server hasn't been patched to recognize
+				multiple send-data frames and concatenate them,
+				then it also won't be expecting an I/O count,
+				so sending one will invalidate the message and
+				prevent the server from corrupting the data (by
+				writing only the last data frame to the file).
+			*/
+			
+			queue_int( queue, Frame_io_count, len, r_id );
+			
+			frame_header header = FREEMOUNT_FRAME_HEADER_INITIALIZER;
+			
+			header.big_size = iota::big_u16( block_size );
+			
+			header.r_id = r_id;
+			header.type = type;
+			
+			do
+			{
+				queue.add( &header, sizeof header );
+				
+				queue.add( s, block_size );
+				
+				s   += block_size;
+				len -= block_size;
+			}
+			while ( len > max_length );
+		}
+		
+		if ( len )
+		{
+			queue_string( queue, type, s, len, r_id );
+		}
+	}
+	
 }
