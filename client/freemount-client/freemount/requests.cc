@@ -69,7 +69,7 @@ namespace freemount
 		queue_request( queue, req_write, r_id );
 		
 		queue_string( queue, Frame_arg_path,  path, path_size, r_id );
-		queue_string( queue, Frame_send_data, data, data_size, r_id );
+		queue_buffer( queue, Frame_send_data, data, data_size, r_id );
 		
 		queue_submit( queue, r_id );
 		
@@ -91,7 +91,7 @@ namespace freemount
 		queue_int( queue, Frame_seek_offset, offset, r_id );
 		
 		queue_string( queue, Frame_arg_path,  path, path_size, r_id );
-		queue_string( queue, Frame_send_data, data, data_size, r_id );
+		queue_buffer( queue, Frame_send_data, data, data_size, r_id );
 		
 		queue_submit( queue, r_id );
 		
