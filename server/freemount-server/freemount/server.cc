@@ -396,7 +396,9 @@ enum arg_mask
 	Mask_path   = 1 << Frame_arg_path,
 	Mask_fd     = 1 << Frame_arg_fd,
 	
-	Mask_data   = 1 << Frame_send_data,
+	Mask_data   = 1 << Frame_send_data
+	            | 1 << Frame_io_count,
+	
 	Mask_count  = 1 << Frame_io_count,
 	Mask_offset = 1 << Frame_seek_offset,
 };
