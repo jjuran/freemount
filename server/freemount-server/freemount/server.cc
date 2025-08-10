@@ -14,6 +14,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// plus
+#include "plus/string/concat.hh"
+
 // poseven
 #include "poseven/types/errno_t.hh"
 
@@ -579,7 +582,7 @@ int frame_handler( void* that, const frame_header& frame )
 			break;
 		
 		case Frame_send_data:
-			r.data.assign( data, get_size( frame ) );
+			r.data = plus::concat( r.data, data, get_size( frame ) );
 			break;
 		
 		case Frame_io_count:
